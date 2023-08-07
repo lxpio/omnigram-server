@@ -1,0 +1,28 @@
+# http server listen address
+api_addr: '0.0.0.0:8080'
+
+model_path: './models'
+
+log_level: 'debug'
+
+log_dir: 'stdout'
+
+
+model_options:
+- name: ggml-llama-7b
+  parameters:
+    top_p: 80
+    top_k: 0.9
+    temperature: 0.7
+    max_tokens: 128
+    model_path: './models/ggml-llama-7b.bin'
+- name: vicuna-13b-v1.1
+  parameters:
+    api_host: 'http://127.0.0.1:8000/v1'
+    api_key: 'sk-xxxxxxx'
+    top_p: 80
+    top_k: 0.9
+    temperature: 0.7
+    max_tokens: 8192
+
+

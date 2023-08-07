@@ -1,0 +1,9 @@
+# completion
+###
+POST http://192.168.12.213:8000/v1/completions
+Content-Type: application/json
+
+{
+    "model":"vicuna-13b-v1.1",
+    "prompt": ["怎样计算三角形面积"]
+}
