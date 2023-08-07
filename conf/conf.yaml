@@ -16,9 +16,10 @@ model_options:
     temperature: 0.7
     max_tokens: 128
     model_path: './models/ggml-llama-7b.bin'
-- name: vicuna-13b-v1.1
+- name: vicuna-13b-v1.5-16k
   parameters:
-    api_host: 'http://127.0.0.1:8000/v1'
+    endpoints: 
+    - 'http://127.0.0.1:21002'
     api_key: 'sk-xxxxxxx'
     top_p: 80
     top_k: 0.9

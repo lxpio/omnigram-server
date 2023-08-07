@@ -3,8 +3,8 @@ package model
 import (
 	"fmt"
 
-	"github.com/nexptr/llmchain/chains"
 	"github.com/nexptr/llmchain/llms"
+	"github.com/nexptr/llmchain/llms/fschat"
 	"github.com/nexptr/llmchain/llms/openai"
 	"github.com/nexptr/omnigram-server/conf"
 	"github.com/nexptr/omnigram-server/log"
@@ -45,32 +45,32 @@ func (m *Manager) Load() error {
 		modeType := llms.GetModelType(o.Name)
 
 		switch modeType {
-		case llms.ModelOpenAI:
-			llm, err := openai.FromYaml(o)
+		// case llms.ModelOpenAI:
+		// 	llm, err := openai.FromYaml(o)
+		// 	if err != nil {
+		// 		return err
+		// 	}
+		// 	m.loadedModels[o.Name] = llm
+		// 	log.I(`loaded llama.cpp from `, o.Name)
+
+		case llms.ModelFSChat:
+
+			llm, err := fschat.FromYaml(o)
 			if err != nil {
+
 				return err
 			}
 			m.loadedModels[o.Name] = llm
-			log.I(`loaded llama.cpp from `, o.Name)
-
-		case llms.ModelLLaMACPP:
-
-			// llm, err := m.LoadLLaMACpp(o)
-			// if err != nil {
-
-			// 	return err
-			// }
-			// m.loadedModels[o.Name] = llm
 		default:
 
-			return fmt.Errorf(`model: %s not support`, o.Name)
+			log.E(`model: ` + o.Name + ` not support`)
 		}
 
 	}
 
 	//Reg all chain
 
-	chains.RegChain(chains.NewBaseChatChain())
+	// chains.RegChain(chains.NewBaseChatChain())
 
 	return nil
 

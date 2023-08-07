@@ -5,7 +5,7 @@ go 1.20
 require (
 	github.com/gin-gonic/gin v1.9.0
 	github.com/natefinch/lumberjack v2.0.0+incompatible
-	github.com/nexptr/llmchain v0.0.0-20230805070305-6894fa3e62d7
+	github.com/nexptr/llmchain v0.0.0-20230807130914-95f5f5d18bec
 	go.uber.org/zap v1.24.0
 	gopkg.in/yaml.v2 v2.4.0
 )
