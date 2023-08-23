@@ -1,4 +1,4 @@
-package api
+package utils
 
 var (
 	ReqArgsErr             = Response{Code: 400}

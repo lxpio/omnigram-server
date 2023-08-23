@@ -1,4 +1,4 @@
-package model_test
+package llm_test
 
 import (
 	"path"

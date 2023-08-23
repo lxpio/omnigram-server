@@ -31,10 +31,10 @@ omnigram-server:
 	@cp -f ${PROJECT_PATH}/conf/conf.yaml ${DESTDIR}/omnigram-server-${VERSION}/conf/conf.yaml
 
 	@echo "build github.com/nexptr/omnigram-server"
-	@env  go build -ldflags ${LDFLAGS} -o ${DESTDIR}/llmchain-${VERSION}/bin/app github.com/nexptr/omnigram-server/cmd/omni-server
+	@env  go build -ldflags ${LDFLAGS} -o ${DESTDIR}/omnigram-server-${VERSION}/bin/omni-server github.com/nexptr/omnigram-server/cmd/omni-server
 
 
 clean:
 	rm -rf ${DESTDIR}
-	docker rmi llmchain:${VERSION}
+	docker rmi omnigram-server:${VERSION}
 

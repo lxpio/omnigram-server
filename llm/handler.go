@@ -1,4 +1,4 @@
-package api
+package llm
 
 import (
 	"bytes"
@@ -11,17 +11,17 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/nexptr/llmchain/schema"
 	"github.com/nexptr/omnigram-server/log"
-	"github.com/nexptr/omnigram-server/model"
+	"github.com/nexptr/omnigram-server/utils"
 )
 
-func editEndpointHandler(manager *model.Manager) gin.HandlerFunc {
+func editEndpointHandler() gin.HandlerFunc {
 	return func(c *gin.Context) {
 
 	}
 }
 
 // https://platform.openai.com/docs/api-reference/completions
-func completionEndpointHandler(manager *model.Manager) gin.HandlerFunc {
+func completionEndpointHandler() gin.HandlerFunc {
 	return func(c *gin.Context) {
 
 		log.I(`parse input...`)
@@ -31,19 +31,19 @@ func completionEndpointHandler(manager *model.Manager) gin.HandlerFunc {
 			// return nil, fmt.Errorf("failed reading parameters from request: ", err.Error())
 			log.E("failed reading parameters from request: ", err.Error())
 			//todo 从中间件拿取语言类型
-			c.JSON(http.StatusBadRequest, ReqArgsErr.WithMessage(err.Error()))
+			c.JSON(http.StatusBadRequest, utils.ReqArgsErr.WithMessage(err.Error()))
 			return
 		}
 
 		log.D(`current input:`, input.String())
 
-		llm, err := manager.LLMChain(input.Model, input.Langchain)
+		llm, err := mng.LLMChain(input.Model, input.Langchain)
 
 		if err != nil {
 
 			log.E("model not found or loaded:", err)
 
-			c.JSON(http.StatusInternalServerError, ModelNotExistsErr.WithMessage(err.Error()))
+			c.JSON(http.StatusInternalServerError, utils.ModelNotExistsErr.WithMessage(err.Error()))
 			return
 		}
 
@@ -53,7 +53,7 @@ func completionEndpointHandler(manager *model.Manager) gin.HandlerFunc {
 
 			log.E("model not found or loaded:", err)
 
-			c.JSON(http.StatusInternalServerError, ModelNotExistsErr.WithMessage(err.Error()))
+			c.JSON(http.StatusInternalServerError, utils.ModelNotExistsErr.WithMessage(err.Error()))
 			return
 		}
 		// jsonResult, _ := json.Marshal(resp)
@@ -66,7 +66,7 @@ func completionEndpointHandler(manager *model.Manager) gin.HandlerFunc {
 }
 
 // https://platform.openai.com/docs/api-reference/embeddings
-func embeddingsEndpointHandler(manager *model.Manager) gin.HandlerFunc {
+func embeddingsEndpointHandler() gin.HandlerFunc {
 	return func(c *gin.Context) {
 
 		log.I(`parse input...`)
@@ -76,26 +76,26 @@ func embeddingsEndpointHandler(manager *model.Manager) gin.HandlerFunc {
 			// return nil, fmt.Errorf("failed reading parameters from request: ", err.Error())
 			log.E("failed reading parameters from request: ", err.Error())
 			//todo 从中间件拿取语言类型
-			c.JSON(http.StatusBadRequest, ReqArgsErr.WithMessage(err.Error()))
+			c.JSON(http.StatusBadRequest, utils.ReqArgsErr.WithMessage(err.Error()))
 			return
 		}
 
 		if err := input.Verify(); err != nil {
 			log.E("failed reading parameters from request: ", err.Error())
 			//todo 从中间件拿取语言类型
-			c.JSON(http.StatusBadRequest, ReqArgsErr.WithMessage(err.Error()))
+			c.JSON(http.StatusBadRequest, utils.ReqArgsErr.WithMessage(err.Error()))
 			return
 		}
 
 		log.D(`current input:`, input.String())
 
-		llm, err := manager.LLMChain(input.Model, "")
+		llm, err := mng.LLMChain(input.Model, "")
 
 		if err != nil {
 
 			log.E("model not found or loaded:", err)
 
-			c.JSON(http.StatusInternalServerError, ModelNotExistsErr.WithMessage(err.Error()))
+			c.JSON(http.StatusInternalServerError, utils.ModelNotExistsErr.WithMessage(err.Error()))
 			return
 		}
 
@@ -105,7 +105,7 @@ func embeddingsEndpointHandler(manager *model.Manager) gin.HandlerFunc {
 
 			log.E("model not found or loaded:", err)
 
-			c.JSON(http.StatusInternalServerError, ModelNotExistsErr.WithMessage(err.Error()))
+			c.JSON(http.StatusInternalServerError, utils.ModelNotExistsErr.WithMessage(err.Error()))
 			return
 		}
 		// jsonResult, _ := json.Marshal(resp)
@@ -117,11 +117,11 @@ func embeddingsEndpointHandler(manager *model.Manager) gin.HandlerFunc {
 	}
 }
 
-func listModelsHandler(manager *model.Manager) gin.HandlerFunc {
+func listModelsHandler() gin.HandlerFunc {
 	return func(c *gin.Context) {
 
 		log.I(`received list model req`)
-		list := manager.ListModels()
+		list := mng.ListModels()
 
 		models := []OpenAIModel{}
 		for _, m := range list {
@@ -151,7 +151,7 @@ func chatCallback(resp chan *schema.ChatResponse, done chan error) schema.SreamC
 	}
 }
 
-func chatEndpointHandler(manager *model.Manager) gin.HandlerFunc {
+func chatEndpointHandler() gin.HandlerFunc {
 
 	return func(c *gin.Context) {
 
@@ -161,19 +161,19 @@ func chatEndpointHandler(manager *model.Manager) gin.HandlerFunc {
 			// return nil, fmt.Errorf("failed reading parameters from request: ", err.Error())
 			log.E("failed reading parameters from request: ", err.Error())
 			//todo 从中间件拿取语言类型
-			c.JSON(http.StatusBadRequest, ReqArgsErr.WithMessage(err.Error()))
+			c.JSON(http.StatusBadRequest, utils.ReqArgsErr.WithMessage(err.Error()))
 			return
 		}
 
 		log.D(`current input:`, input.String())
 
-		llm, err := manager.LLMChain(input.Model, input.Langchain)
+		llm, err := mng.LLMChain(input.Model, input.Langchain)
 
 		if err != nil {
 
 			log.E("model not found or loaded:", err)
 
-			c.JSON(http.StatusInternalServerError, ModelNotExistsErr.WithMessage(err.Error()))
+			c.JSON(http.StatusInternalServerError, utils.ModelNotExistsErr.WithMessage(err.Error()))
 			return
 		}
 
@@ -191,7 +191,7 @@ func chatEndpointHandler(manager *model.Manager) gin.HandlerFunc {
 			if err != nil {
 				log.E("run stream completion failed: ", err.Error(), resp.String())
 				// return resp, err
-				c.JSON(http.StatusInternalServerError, ModelNotExistsErr.WithMessage(err.Error()))
+				c.JSON(http.StatusInternalServerError, utils.ModelNotExistsErr.WithMessage(err.Error()))
 				return
 			}
 
@@ -248,7 +248,7 @@ func chatEndpointHandler(manager *model.Manager) gin.HandlerFunc {
 
 		if err != nil {
 			log.E(`run chat without stream: `, err.Error())
-			c.JSON(http.StatusInternalServerError, ReqArgsErr.WithMessage(err.Error()))
+			c.JSON(http.StatusInternalServerError, utils.ReqArgsErr.WithMessage(err.Error()))
 
 		}
 		c.JSON(http.StatusOK, resp)
