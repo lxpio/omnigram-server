@@ -8,6 +8,25 @@ log_level: 'debug'
 log_dir: 'stdout'
 
 
+
+
+epub_options:
+  data_path: './data/epub'
+  cache_path: './data/cache'
+  save_cover_beside_src: false
+  max_epub_size: 1000000
+  db_config:
+    # driver: 'postgres'
+    # host: '127.0.0.1'
+    # port: 5432
+    # passwd: 'password'
+    # user: 'postgres'
+    # dbname: 'epub'
+    # sslmode: 'disable'
+    driver: 'sqlite3'
+    host: './data/epub.db'
+
+
 model_options:
 - name: ggml-llama-7b
   parameters:

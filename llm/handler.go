@@ -31,7 +31,7 @@ func completionEndpointHandler() gin.HandlerFunc {
 			// return nil, fmt.Errorf("failed reading parameters from request: ", err.Error())
 			log.E("failed reading parameters from request: ", err.Error())
 			//todo 从中间件拿取语言类型
-			c.JSON(http.StatusBadRequest, utils.ReqArgsErr.WithMessage(err.Error()))
+			c.JSON(http.StatusBadRequest, utils.ErrReqArgs.WithMessage(err.Error()))
 			return
 		}
 
@@ -76,14 +76,14 @@ func embeddingsEndpointHandler() gin.HandlerFunc {
 			// return nil, fmt.Errorf("failed reading parameters from request: ", err.Error())
 			log.E("failed reading parameters from request: ", err.Error())
 			//todo 从中间件拿取语言类型
-			c.JSON(http.StatusBadRequest, utils.ReqArgsErr.WithMessage(err.Error()))
+			c.JSON(http.StatusBadRequest, utils.ErrReqArgs.WithMessage(err.Error()))
 			return
 		}
 
 		if err := input.Verify(); err != nil {
 			log.E("failed reading parameters from request: ", err.Error())
 			//todo 从中间件拿取语言类型
-			c.JSON(http.StatusBadRequest, utils.ReqArgsErr.WithMessage(err.Error()))
+			c.JSON(http.StatusBadRequest, utils.ErrReqArgs.WithMessage(err.Error()))
 			return
 		}
 
@@ -161,7 +161,7 @@ func chatEndpointHandler() gin.HandlerFunc {
 			// return nil, fmt.Errorf("failed reading parameters from request: ", err.Error())
 			log.E("failed reading parameters from request: ", err.Error())
 			//todo 从中间件拿取语言类型
-			c.JSON(http.StatusBadRequest, utils.ReqArgsErr.WithMessage(err.Error()))
+			c.JSON(http.StatusBadRequest, utils.ErrReqArgs.WithMessage(err.Error()))
 			return
 		}
 
@@ -248,7 +248,7 @@ func chatEndpointHandler() gin.HandlerFunc {
 
 		if err != nil {
 			log.E(`run chat without stream: `, err.Error())
-			c.JSON(http.StatusInternalServerError, utils.ReqArgsErr.WithMessage(err.Error()))
+			c.JSON(http.StatusInternalServerError, utils.ErrReqArgs.WithMessage(err.Error()))
 
 		}
 		c.JSON(http.StatusOK, resp)
