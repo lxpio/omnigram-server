@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/nexptr/llmchain/llms"
+	"github.com/nexptr/omnigram-server/store"
 	"go.uber.org/zap/zapcore"
 	"gopkg.in/yaml.v2"
 )
@@ -19,7 +19,13 @@ type Config struct {
 
 	LogDir string `yaml:"log_dir"`
 
-	ModelOptions []llms.ModelOptions `yaml:"model_options"`
+	MetaDataPath string `yaml:"metadata_path"`
+
+	DBConfig *store.Opt `json:"db_config" yaml:"db_config"`
+
+	ModelOptions []ModelOptions `yaml:"model_options"`
+
+	EpubOptions EpubOptions `yaml:"epub_options"`
 }
 
 func defaultConfig() *Config {
@@ -44,4 +50,10 @@ func InitConfig(path string) (*Config, error) {
 		return nil, fmt.Errorf("cannot unmarshal config file: %w", err)
 	}
 	return cf, nil
+}
+
+type EpubOptions struct {
+	DataPath           string `json:"data_path" yaml:"data_path"`
+	SaveCoverBesideSrc bool   `json:"save_cover_beside_src" yaml:"save_cover_beside_src"`
+	MaxEpubSize        int64  `json:"max_epub_size" yaml:"max_epub_size"`
 }

@@ -1,4 +1,4 @@
-package llm
+package chat
 
 type OpenAIModel struct {
 	ID     string `json:"id"`

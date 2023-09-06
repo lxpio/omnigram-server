@@ -1,12 +1,18 @@
 package utils
 
 type Response struct {
-	Code    int    `json:"code"`
-	Message string `json:"message"`
+	Code    int         `json:"code"`
+	Message string      `json:"message"`
+	Data    interface{} `json:"data,omitempty"`
 }
 
 func (r *Response) WithMessage(err string) *Response {
 	r.Message = err
+	return r
+}
+
+func (r *Response) WithData(data interface{}) *Response {
+	r.Data = data
 	return r
 }
 

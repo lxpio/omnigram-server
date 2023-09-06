@@ -1,7 +1,8 @@
-package epub
+package schema
 
 import (
 	"bytes"
+	"context"
 	"crypto/md5"
 	"encoding/hex"
 	"errors"
@@ -12,14 +13,16 @@ import (
 
 	"github.com/cxbooks/epub"
 	"github.com/nexptr/omnigram-server/log"
+	"github.com/nexptr/omnigram-server/store"
 	"github.com/nexptr/omnigram-server/utils"
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 type Book struct {
 	ID    int64     `json:"id" gorm:"primaryKey;comment:ID"`
 	Size  int64     `json:"size" gorm:"comment:文件大小"`
-	Path  string    `json:"path" gorm:"comment:文件路径"`
+	Path  string    `json:"-" gorm:"comment:文件路径"` //本地文件路径不返回到界面上
 	CTime time.Time `json:"ctime" form:"ctime" gorm:"column:ctime;autoCreateTime;comment:创建时间"`
 	UTime time.Time `json:"utime" gorm:"column:utime;comment:更新时间"`
 
@@ -113,10 +116,13 @@ func RecentBooks(store *gorm.DB, limit int) (BookResp, error) {
 
 }
 
-func FirstBookByID(store *gorm.DB, limit int) (Book, error) {
+func FirstBookByIdentifier(store *gorm.DB, identifier string) (*Book, error) {
 	//获取Book信息
+	book := &Book{}
 
-	panic(`todo`)
+	err := store.First(book, `identifier = ?`, identifier).Error
+
+	return book, err
 }
 
 // SearchBooks 模糊搜索书籍
@@ -127,14 +133,7 @@ func SearchBooks(store *gorm.DB, query *utils.Query) (BookResp, error) {
 		[]Book{},
 	}
 
-	items := []string{`title`, `author`}
-
-	for i := range items {
-		items[i] = items[i] + ` LIKE  '%` + query.Search + `%'`
-	}
-	sql := strings.Join(items, ` OR `)
-
-	tx := store.Model(Book{}).Where(sql)
+	tx := store.Model(Book{}).Where(`title LIKE ? OR author LIKE ?`, `%`+query.Search+`%`, `%`+query.Search+`%`)
 
 	{
 		tx = tx.Session(&gorm.Session{})
@@ -152,16 +151,14 @@ func SearchBooks(store *gorm.DB, query *utils.Query) (BookResp, error) {
 
 }
 
-// Save 存储图书元数据到数据库
-func (book *Book) Save(store *gorm.DB) error {
-	//TODO before save data
-	// err = kv.Write(coverURL, fp, 0)
-	// 	if err != nil {
-	// 		log.E(`存储封面失败,`, book.Path, `失败：`, err.Error())
-	// 		return err
-	// 	}
+// Create 存储图书元数据到数据库
+func (book *Book) Create(store *gorm.DB) error {
 
-	return store.Save(book).Error
+	//存储图书到数据库，如果唯一键 identifier 存在则忽略
+	return store.Clauses(clause.OnConflict{
+		Columns:   []clause.Column{{Name: "identifier"}},
+		DoNothing: true,
+	}).Create(book).Error
 
 }
 
@@ -207,6 +204,7 @@ func (book *Book) GetMetadataFromFile() error {
 			log.E(`解析文件,`, book.Path, `失败：`, err.Error())
 			return err
 		}
+		defer fp.Close()
 
 		buf := new(bytes.Buffer)
 		buf.ReadFrom(fp)
@@ -214,7 +212,7 @@ func (book *Book) GetMetadataFromFile() error {
 		book.coverData = buf.Bytes()
 
 		//将 CoverURL 地址覆盖成解析后的地址
-		book.CoverURL = filepath.Join(`/book/cover`, book.Identifier, book.CoverURL) //TODO 这里要用bookid 获取其他标记避免冲突
+		// book.CoverURL = filepath.Join(book.Identifier, book.CoverURL) //TODO 这里要用bookid 获取其他标记避免冲突
 
 	}
 
@@ -277,6 +275,43 @@ func (m *Book) parseOPF(opf *epub.PackageDocument) {
 
 }
 
+func (m *Book) Save(ctx context.Context, db *gorm.DB, kv store.KV) error {
+
+	//存储图书到数据库
+	//TODO 处理重复问题
+	if err := m.Create(db); err != nil {
+		log.E(`存储图书失败：`, err)
+		return errors.New(`文件：` + m.Path + ` 存储失败：` + err.Error())
+	}
+
+	//创建bucket目录
+	if err := kv.CreateBucket(ctx, m.Identifier[0:2]); err != nil {
+		log.E(`创建目录失败：`, err.Error())
+
+		//如果失败不在继续出来异常
+		return nil
+
+	}
+
+	obj := &store.Object{
+		Key:          m.CoverKey(),
+		Size:         m.Size,
+		LastModified: m.CTime,
+		Data:         m.GetCoverData(),
+	}
+
+	//存储封面图片数据
+	if err := kv.PutObject(ctx, m.Identifier[0:2], obj); err != nil {
+		log.E(`存储封面失败,`, m.Path, `失败：`, err.Error())
+		// return err
+	}
+	return nil
+}
+
+func (m *Book) CoverKey() string {
+	return filepath.Join(m.Identifier + replacePath(m.CoverURL))
+}
+
 func (m *Book) parseMeta(opf *epub.PackageDocument) {
 
 	metas := opf.Metadata.Meta
@@ -288,20 +323,33 @@ func (m *Book) parseMeta(opf *epub.PackageDocument) {
 		case "calibre:series_index":
 			m.SeriesIndex = meta.Content
 		case "cover":
-			id := meta.Content
+			// id := meta.Content
 
 			if opf.Manifest != nil {
 				items := opf.Manifest.Items
 				for i := len(items) - 1; i >= 0; i-- {
-					if items[i].ID == `cover-image` {
+					if items[i].ID == `cover-image` || items[i].Properties == `cover-image` {
 						m.CoverURL = items[i].Href
+						break
 					}
+
 				}
 
 			}
-			println(id)
+			// println(id)
 		}
 
+	}
+
+	if m.CoverURL == `` && opf.Manifest != nil {
+		items := opf.Manifest.Items
+		for i := len(items) - 1; i >= 0; i-- {
+			if items[i].ID == `cover-image` || items[i].Properties == `cover-image` {
+				m.CoverURL = items[i].Href
+				break
+			}
+
+		}
 	}
 
 }
@@ -323,4 +371,9 @@ func elt2FirstStr(elt []epub.Element) string {
 	}
 	return ""
 
+}
+
+// 替换路径字符串中'/'为'-'
+func replacePath(path string) string {
+	return strings.ReplaceAll(path, "/", "-")
 }

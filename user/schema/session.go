@@ -1,4 +1,4 @@
-package user
+package schema
 
 import (
 	"crypto/sha1"

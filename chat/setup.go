@@ -1,6 +1,7 @@
-package llm
+package chat
 
 import (
+	"context"
 	"os"
 
 	"github.com/gin-gonic/gin"
@@ -10,8 +11,9 @@ import (
 
 var mng *Manager
 
-func Init(cf *conf.Config) {
+func Initialize(ctx context.Context, cf *conf.Config) {
 	mng = NewModelManager(cf)
+
 }
 
 // Setup reg router

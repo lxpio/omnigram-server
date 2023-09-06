@@ -5,7 +5,7 @@ PROJECT_NAME=omnigram-server
 VERSION=$(shell git describe --tags | sed 's/\(.*\)-.*/\1/')
 BUILD_DATE=$(shell date -u '+%Y-%m-%d_%I:%M:%S%p')
 BUILD_HASH=$(shell git rev-parse HEAD)
-LDFLAGS="-X github.com/nexptr/omnigram-server.BuildStamp=${BUILD_DATE} -X github.com/nexptr/omnigram-server.GitHash=${BUILD_HASH} -X github.com/nexptr/omnigram-server.VERSION=${VERSION} -s -w"
+LDFLAGS="-X github.com/nexptr/omnigram-server/cmd/omni-server.BuildStamp=${BUILD_DATE} -X github.com/nexptr/omnigram-server/cmd/omni-server.GitHash=${BUILD_HASH} -X github.com/nexptr/omnigram-server/cmd/omni-server.VERSION=${VERSION} -s -w"
 
 DESTDIR=${PROJECT_PATH}/build
 VERSION=v0.0.2
