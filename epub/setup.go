@@ -10,12 +10,14 @@ import (
 	"github.com/nexptr/omnigram-server/epub/schema"
 	"github.com/nexptr/omnigram-server/epub/selfhost"
 	"github.com/nexptr/omnigram-server/log"
+	"github.com/nexptr/omnigram-server/middleware"
+	"github.com/nexptr/omnigram-server/store"
 	"github.com/nexptr/omnigram-server/utils"
 )
 
 var (
-	store *schema.Store
-	kv    schema.KV
+	orm *store.Store
+	kv  schema.KV
 
 	uploadPath string
 
@@ -26,10 +28,10 @@ func Initialize(ctx context.Context, cf *conf.Config) {
 
 	log.I(`打开数据库连接...`)
 
-	store, _ = schema.OpenDB(cf.EpubOptions.DBConfig)
+	orm, _ = store.OpenDB(cf.EpubOptions.DBConfig)
 
 	//auotoMigrate
-	if err := store.DB.AutoMigrate(&schema.Book{}); err != nil {
+	if err := orm.DB.AutoMigrate(&schema.Book{}); err != nil {
 
 		panic(err)
 	}
@@ -63,33 +65,37 @@ func Initialize(ctx context.Context, cf *conf.Config) {
 		log.E(err)
 	}
 
-	manager, _ = selfhost.NewScannerManager(ctx, cf, kv, store)
+	manager, _ = selfhost.NewScannerManager(ctx, cf, kv, orm)
 
 }
 
 // Setup reg router
 func Setup(router *gin.Engine) {
 
-	router.GET("/book/cover/*book_cover_path", coverImageHandle)
+	book := router.Group("/book", middleware.Get(middleware.OathMD))
 
-	router.GET("/book/stats", GetBookStats)
-	router.GET("/book/index", Index)
-	router.GET("/book/search", SearchBook)
-	router.GET("/book/recent", RecentBook)
+	book.GET("/cover/*book_cover_path", middleware.Get(middleware.OathMD), coverImageHandle)
+
+	book.GET("/stats", GetBookStats)
+	book.GET("/index", Index)
+	book.GET("/search", SearchBook)
+	book.GET("/recent", RecentBook)
+
+	book.GET("/scan/status", getScanStatusHandle)
+	book.POST("/scan/stop", stopScanHandle)
+	book.POST("/scan/run", runScanHandle)
 	// router.GET("/book/hot", HotBook)
 	// router.GET("/book/nav", BookNav)
-	router.GET("/book/upload", bookUploadHandle)
-	router.GET("/books/:book_id", BookDetail)
+	book.GET("/upload", bookUploadHandle)
+
+	router.GET("/books/:book_id", middleware.Get(middleware.OathMD), BookDetail)
 	// router.GET("/books/:book_id/delete", BookDelete)
 	// router.GET("/books/:book_id/edit", BookEdit)
-	router.GET(`/books/:book_id/download`, bookDownloadHandle)
+	router.GET(`/books/:book_id/download`, middleware.Get(middleware.OathMD), bookDownloadHandle)
 	// router.GET("/books/:book_id/push", BookPush)
 	// router.GET("/books/:book_id/refer", BookRefer)
 	// router.GET("/read/:book_id", BookRead)
 
-	router.GET("/book/scan/status", getScanStatusHandle)
-	router.POST("/book/scan/stop", stopScanHandle)
-	router.POST("/book/scan/run", runScanHandle)
 }
 
 func Close() {

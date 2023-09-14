@@ -6,6 +6,7 @@ require (
 	github.com/bluele/gcache v0.0.2
 	github.com/cxbooks/epub v0.0.0-20220913085452-dd45a34685a3
 	github.com/gin-gonic/gin v1.9.0
+	github.com/hashicorp/golang-lru/v2 v2.0.6
 	github.com/natefinch/lumberjack v2.0.0+incompatible
 	github.com/nexptr/llmchain v0.0.0-20230807130914-95f5f5d18bec
 	go.uber.org/zap v1.24.0

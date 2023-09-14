@@ -13,6 +13,7 @@ import (
 	"github.com/nexptr/omnigram-server/conf"
 	"github.com/nexptr/omnigram-server/epub/schema"
 	"github.com/nexptr/omnigram-server/log"
+	"github.com/nexptr/omnigram-server/store"
 	"go.uber.org/zap/zapcore"
 )
 
@@ -25,17 +26,17 @@ func init() {
 	basePath = testDir + `/../../`
 }
 
-func initStore() *schema.Store {
+func initStore() *store.Store {
 
-	opt := &schema.Opt{
-		Driver:   schema.DRSQLite,
+	opt := &store.Opt{
+		Driver:   store.DRSQLite,
 		LogLevel: zapcore.DebugLevel,
 		Host:     basePath + "build/cxbooks.db",
 	}
 	log.I(`打开数据库连接...`)
-	store, _ := schema.OpenDB(opt)
+	orm, _ := store.OpenDB(opt)
 	log.I(`打开数据库连接`)
-	return store
+	return orm
 }
 
 func TestScanBooks(t *testing.T) {
@@ -50,7 +51,7 @@ func TestScanBooks(t *testing.T) {
 			CachePath:          basePath + `build`,
 			SaveCoverBesideSrc: false,
 			MaxEpubSize:        0,
-			DBConfig:           &schema.Opt{},
+			DBConfig:           &store.Opt{},
 		},
 	}
 

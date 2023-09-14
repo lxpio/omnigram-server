@@ -3,6 +3,13 @@ package utils
 var (
 	SUCCESS = Response{Code: 200, Message: `sucesss`}
 
+	ErrSession = Response{Code: 401, Message: `session is invalid`}
+
+	ErrSessionTimeout = Response{Code: 401, Message: `session is timeout`}
+	ErrUnauthorized   = Response{Code: 401, Message: `unauthorized`}
+
+	ErrAPIKey = Response{Code: 401, Message: `api key is invalid`}
+
 	ErrInnerServer = Response{Code: 500}
 	ErrReqArgs     = Response{Code: 400, Message: `req args error`}
 
@@ -14,6 +21,10 @@ var (
 	ErrScanPathNotExist = Response{Code: 1003, Message: `scan path not exist`}
 	ErrSaveFile         = Response{Code: 1004, Message: `save file error`}
 	ErrParseEpubFile    = Response{Code: 1005, Message: `parse epub file error`}
+
+	ErrSaveToken   = Response{Code: 1006, Message: `save token error`}
+	ErrDeleteToken = Response{Code: 1007, Message: `delete token error`}
+	ErrGetTokens   = Response{Code: 1008, Message: `get tokens failed`}
 )
 
 const (

@@ -74,7 +74,7 @@ func (m *Scanner) startSingleThread(manager *ScannerManager) {
 					log.E(`获取图书基本元素失败 `, err.Error())
 					errChan <- `文件：` + book.Path + ` 解析失败：` + err.Error()
 				} else {
-					if err := book.Save(manager.ctx, manager.store.DB, manager.kv); err != nil {
+					if err := book.Save(manager.ctx, manager.orm.DB, manager.kv); err != nil {
 						errChan <- err.Error()
 					}
 				}
@@ -160,7 +160,7 @@ func (m *Scanner) Start(manager *ScannerManager, maxThread int) {
 						log.E(`获取图书基本元素失败 `, err.Error())
 						errChan <- `文件：` + b.Path + ` 解析失败：` + err.Error()
 					} else {
-						if err := b.Save(manager.ctx, manager.store.DB, manager.kv); err != nil {
+						if err := b.Save(manager.ctx, manager.orm.DB, manager.kv); err != nil {
 							errChan <- err.Error()
 						}
 					}

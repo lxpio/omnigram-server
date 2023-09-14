@@ -5,7 +5,7 @@ import (
 	"os"
 
 	"github.com/nexptr/llmchain/llms"
-	"github.com/nexptr/omnigram-server/epub/schema"
+	"github.com/nexptr/omnigram-server/store"
 	"go.uber.org/zap/zapcore"
 	"gopkg.in/yaml.v2"
 )
@@ -50,9 +50,9 @@ func InitConfig(path string) (*Config, error) {
 }
 
 type EpubOptions struct {
-	DataPath           string      `json:"data_path" yaml:"data_path"`
-	CachePath          string      `json:"cache_path" yaml:"cache_path"`
-	SaveCoverBesideSrc bool        `json:"save_cover_beside_src" yaml:"save_cover_beside_src"`
-	MaxEpubSize        int64       `json:"max_epub_size" yaml:"max_epub_size"`
-	DBConfig           *schema.Opt `json:"db_config" yaml:"db_config"`
+	DataPath           string     `json:"data_path" yaml:"data_path"`
+	CachePath          string     `json:"cache_path" yaml:"cache_path"`
+	SaveCoverBesideSrc bool       `json:"save_cover_beside_src" yaml:"save_cover_beside_src"`
+	MaxEpubSize        int64      `json:"max_epub_size" yaml:"max_epub_size"`
+	DBConfig           *store.Opt `json:"db_config" yaml:"db_config"`
 }

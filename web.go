@@ -3,6 +3,7 @@ package api
 import (
 	"context"
 	"net/http"
+	"os"
 
 	"github.com/gin-gonic/gin"
 	"github.com/nexptr/llmchain"
@@ -10,6 +11,8 @@ import (
 	"github.com/nexptr/omnigram-server/epub"
 	"github.com/nexptr/omnigram-server/llm"
 	"github.com/nexptr/omnigram-server/log"
+	"github.com/nexptr/omnigram-server/store"
+	"github.com/nexptr/omnigram-server/user"
 
 	"go.uber.org/zap/zapcore"
 )
@@ -47,6 +50,7 @@ func (m *App) StartContext(ctx context.Context) error {
 	// goroutine is used here, so we can use ctrl+c to terminate it
 	go func() {
 
+		user.Initialize(ctx, m.cf)
 		llm.Initialize(ctx, m.cf)
 
 		epub.Initialize(ctx, m.cf)
@@ -74,6 +78,7 @@ func (m *App) GracefulStop() {
 	}
 
 	llm.Close()
+	llm.Close()
 	epub.Close()
 
 }
@@ -93,8 +98,26 @@ func (m *App) initGinRoute() *gin.Engine {
 	//这样设置默认可能是不安全的，因为头部字段可以伪造，需求前置的反向代理的xff 确保是对的
 	router.SetTrustedProxies([]string{"0.0.0.0/0", "::"})
 
+	user.Setup(router)
 	llm.Setup(router)
 	epub.Setup(router)
 
 	return router
+}
+
+func InitServerData(cf *conf.Config) {
+	//初始化数据库连接
+
+	db, err := store.OpenDB(cf.EpubOptions.DBConfig)
+
+	if err != nil {
+		log.E(err)
+		os.Exit(1)
+	}
+
+	if err := user.InitData(db); err != nil {
+		log.E(err)
+		os.Exit(1)
+	}
+
 }

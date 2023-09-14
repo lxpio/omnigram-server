@@ -9,6 +9,7 @@ import (
 	"github.com/nexptr/omnigram-server/conf"
 	"github.com/nexptr/omnigram-server/epub/schema"
 	"github.com/nexptr/omnigram-server/log"
+	"github.com/nexptr/omnigram-server/store"
 	"github.com/nexptr/omnigram-server/utils"
 )
 
@@ -25,8 +26,8 @@ type ScanStatus struct {
 type ScannerManager struct {
 	cf *conf.Config
 
-	kv    schema.KV
-	store *schema.Store
+	kv  schema.KV
+	orm *store.Store
 
 	ctx context.Context
 
@@ -36,13 +37,13 @@ type ScannerManager struct {
 	stats ScanStatus
 }
 
-func NewScannerManager(ctx context.Context, cf *conf.Config, kv schema.KV, store *schema.Store) (*ScannerManager, error) {
+func NewScannerManager(ctx context.Context, cf *conf.Config, kv schema.KV, orm *store.Store) (*ScannerManager, error) {
 
 	scanner := &ScannerManager{
-		cf:    cf,
-		kv:    kv,
-		store: store,
-		ctx:   ctx,
+		cf:  cf,
+		kv:  kv,
+		orm: orm,
+		ctx: ctx,
 	}
 
 	//获取本地存储的状态

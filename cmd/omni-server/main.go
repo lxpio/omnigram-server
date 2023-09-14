@@ -15,18 +15,22 @@ import (
 )
 
 var (
+	VERSION    = "UNKNOWN"
+	BuildStamp = "UNKNOWN"
+	GitHash    = "UNKNOWN"
+
 	confFile    string
 	showVersion bool
 
 	//override config logLevel
-	// logLevel api.Level
+	initFlag bool
 )
 
 func main() {
 
 	flag.BoolVar(&showVersion, "version", false, "show build version.")
 	flag.StringVar(&confFile, "conf", "./conf.yml", "The configure file")
-	// flag.Var(&logLevel, "log_level", "The log level [debug,info,error]")
+	flag.BoolVar(&initFlag, "init", false, "init server first user and token")
 
 	flag.Parse()
 
@@ -48,21 +52,27 @@ func main() {
 
 	defer log.Flush()
 
-	//open api server
-	app := api.NewAPPWithConfig(cf)
-
 	ch := make(chan os.Signal)
 	signal.Notify(ch, os.Interrupt, syscall.SIGTERM)
-
 	ctx, cancel := context.WithCancel(context.Background())
 
-	app.StartContext(ctx)
+	var app *api.App
+
+	if initFlag {
+		api.InitServerData(cf)
+		os.Exit(0)
+	} else {
+		//open api server
+		app := api.NewAPPWithConfig(cf)
+		app.StartContext(ctx)
+	}
 
 	<-ch
 
 	fmt.Println(`receive ctrl+c command, now quit...`)
 	defer cancel()
 
-	app.GracefulStop()
-
+	if app != nil {
+		app.GracefulStop()
+	}
 }

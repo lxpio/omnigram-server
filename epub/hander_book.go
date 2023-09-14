@@ -73,7 +73,7 @@ func bookUploadHandle(c *gin.Context) {
 		return
 	}
 
-	if err := book.Save(context.Background(), store.DB, kv); err != nil {
+	if err := book.Save(context.Background(), orm.DB, kv); err != nil {
 		log.E(`录入文档失败`, err)
 		c.JSON(http.StatusOK, utils.ErrSaveFile)
 		return
@@ -93,7 +93,7 @@ func bookDownloadHandle(c *gin.Context) {
 		return
 	}
 
-	book, err := schema.FirstBookByIdentifier(store.DB, dentifier)
+	book, err := schema.FirstBookByIdentifier(orm.DB, dentifier)
 
 	if err != nil {
 		log.E(`获取图书失败：`, err)
@@ -122,7 +122,7 @@ func RecentBook(c *gin.Context) {
 		c.JSON(200, utils.ErrReqArgs.WithMessage(err.Error()))
 		return
 	}
-	recentBooks, err := schema.RecentBooks(store.DB, req.Recent)
+	recentBooks, err := schema.RecentBooks(orm.DB, req.Recent)
 
 	if err != nil {
 		log.I(`用户登录参数异常`, err)
@@ -147,7 +147,7 @@ func SearchBook(c *gin.Context) {
 
 	//TODO过滤特殊字符
 
-	recentBooks, err := schema.SearchBooks(store.DB, req)
+	recentBooks, err := schema.SearchBooks(orm.DB, req)
 
 	if err != nil {
 		log.I(`用户登录参数异常`, err)
@@ -176,7 +176,7 @@ func Index(c *gin.Context) {
 		return
 	}
 
-	randBooks, err := schema.RandomBooks(store.DB, req.Random)
+	randBooks, err := schema.RandomBooks(orm.DB, req.Random)
 
 	if err != nil {
 		log.I(`用户登录参数异常`, err)
@@ -184,7 +184,7 @@ func Index(c *gin.Context) {
 		return
 	}
 
-	recentBooks, err := schema.RecentBooks(store.DB, req.Recent)
+	recentBooks, err := schema.RecentBooks(orm.DB, req.Recent)
 
 	if err != nil {
 		log.I(`用户登录参数异常`, err)
@@ -206,7 +206,7 @@ func Index(c *gin.Context) {
 func GetBookStats(c *gin.Context) {
 	log.D(`获取书籍概览信息`)
 
-	stats, err := schema.GetBookStats(store.DB)
+	stats, err := schema.GetBookStats(orm.DB)
 
 	if err != nil {
 		log.E(`获取数据信息失败`)

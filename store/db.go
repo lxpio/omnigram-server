@@ -23,7 +23,7 @@ const (
 	// DRMySQL driver name for mysql
 	DRMySQL Driver = "mysql"
 	// DRSqlite driver name for mysql
-	DRSqlite Driver = "sqlite"
+	DRSQLite Driver = "sqlite3"
 )
 
 type Store struct {
@@ -127,11 +127,13 @@ func (opt *Opt) DSN() gorm.Dialector {
 		return opt.PGDSN()
 	case opt.Driver == `mysql`:
 		return opt.MySQLDSN()
-	case opt.Driver == `sqlite`:
+	case opt.Driver == `sqlite3`:
 		return opt.SQLiteDSN()
 	}
 
-	return opt.PGDSN()
+	log.F(`unknown driver: ` + opt.Driver)
+	return nil
+
 }
 
 // PGDSN  转换为 PG 连接字符串
@@ -175,7 +177,7 @@ func (opt *Opt) SQLiteDSN() gorm.Dialector {
 }
 
 func (opt *Opt) String() string {
-	if opt.Driver == DRSqlite {
+	if opt.Driver == DRSQLite {
 		return "driver=" + string(opt.Driver) + " path=" + opt.Host
 	}
 	return "driver=" + string(opt.Driver) + " host=" + opt.Host + " port=" + strconv.Itoa(opt.Port) + " user=" + opt.User + " dbname=" + opt.DBName + " password=xxxxxx sslmode=" + opt.SSLMode
