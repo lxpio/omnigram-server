@@ -18,7 +18,7 @@ func getScanStatusHandle(c *gin.Context) {
 func stopScanHandle(c *gin.Context) {
 
 	log.I(`停止当前扫描`)
-	manager.Stop()
+	manager.Close()
 
 	c.JSON(200, utils.SUCCESS)
 
@@ -34,8 +34,8 @@ func runScanHandle(c *gin.Context) {
 	}
 
 	req := &struct {
-		// Path      string `json:"path" binding:"required,startswith=/data/ebooks"`
-		MaxThread int `json:"max_thread" binding:"required,gte=1"`
+		Refresh   bool `json:"refresh"`
+		MaxThread int  `json:"max_thread" binding:"required,gte=1"`
 	}{}
 
 	if err := c.ShouldBind(req); err != nil {
@@ -44,7 +44,7 @@ func runScanHandle(c *gin.Context) {
 		return
 	}
 
-	manager.Start(req.MaxThread)
+	manager.Start(req.MaxThread, req.Refresh)
 
 	c.JSON(200, utils.SUCCESS)
 

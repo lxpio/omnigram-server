@@ -3,18 +3,18 @@ package selfhost
 import (
 	"context"
 	"encoding/json"
+	"os"
+	"path/filepath"
 	"sync"
-	"time"
 
-	"github.com/nexptr/omnigram-server/conf"
-	"github.com/nexptr/omnigram-server/epub/schema"
 	"github.com/nexptr/omnigram-server/log"
 	"github.com/nexptr/omnigram-server/store"
 	"github.com/nexptr/omnigram-server/utils"
+	"github.com/nutsdb/nutsdb"
+	"gorm.io/gorm"
 )
 
 // const statsCachePath = `config`
-const statsfile = `state.json`
 
 // ScanStatus 扫描状态
 type ScanStatus struct {
@@ -24,32 +24,42 @@ type ScanStatus struct {
 }
 
 type ScannerManager struct {
-	cf *conf.Config
-
-	kv  schema.KV
-	orm *store.Store
+	// cf *conf.Config
+	dataPath string
+	kv       store.KV
+	orm      *gorm.DB
 
 	ctx context.Context
 
 	sync.RWMutex
-	scan *Scanner
 
 	stats ScanStatus
 }
 
-func NewScannerManager(ctx context.Context, cf *conf.Config, kv schema.KV, orm *store.Store) (*ScannerManager, error) {
+func NewScannerManager(ctx context.Context, dataPath string, kv store.KV, orm *gorm.DB) (*ScannerManager, error) {
+
+	//初始化上传文件目录
+	uploadPath := filepath.Join(dataPath, `upload`)
+	os.MkdirAll(uploadPath, 0755)
+
+	db, err := nutsdb.Open(
+		nutsdb.DefaultOptions,
+		nutsdb.WithDir(filepath.Join(dataPath, utils.ConfigBucket)),
+	)
+
+	if err != nil {
+		return nil, err
+	}
 
 	scanner := &ScannerManager{
-		cf:  cf,
-		kv:  kv,
-		orm: orm,
-		ctx: ctx,
+		dataPath: dataPath,
+		kv:       kv,
+		orm:      orm,
+		stats:    loadLastScanStatus(db),
+		ctx:      ctx,
 	}
 
 	//获取本地存储的状态
-	if obj, err := kv.GetObject(ctx, utils.ConfigBucket, statsfile); err == nil {
-		json.Unmarshal(obj.Data, &scanner.stats)
-	}
 
 	return scanner, nil
 }
@@ -74,49 +84,30 @@ func (m *ScannerManager) Status() ScanStatus {
 
 }
 
-func (m *ScannerManager) Start(maxThread int) {
+func (m *ScannerManager) Start(maxThread int, refresh bool) {
 
 	if m.IsRunning() {
 		log.E(`扫描器已经在执行，放弃执行`)
 		return
 	}
 	log.I(`启动文件目录扫描`)
-	m.newScan(m.cf.EpubOptions.DataPath, maxThread)
+	m.newScan(m.dataPath, maxThread, refresh)
 
 }
 
-func (m *ScannerManager) newScan(path string, maxThread int) {
+func (m *ScannerManager) newScan(path string, maxThread int, refresh bool) {
 	m.Lock()
-	m.scan = NewScan(path, maxThread) //new scanner
+	scan, err := NewScan(path) //new scanner
+
+	if err != nil {
+		m.Unlock()
+		log.E(err.Error())
+		return
+	}
 	m.stats.Running = true
 	m.Unlock()
 
-	m.scan.Start(m, maxThread)
-}
-
-func (m *ScannerManager) Stop() {
-
-	m.Lock()
-	defer m.Unlock()
-
-	if m.scan != nil {
-		m.scan.Stop()
-	}
-
-}
-
-func (m *ScannerManager) dumpStats() error {
-
-	bytes, _ := json.Marshal(m.stats)
-
-	obj := &schema.Object{
-		Key:          statsfile,
-		Size:         0,
-		LastModified: time.Time{},
-		Data:         bytes,
-	}
-
-	return m.kv.PutObject(m.ctx, utils.ConfigBucket, obj)
+	scan.Start(m, maxThread, refresh)
 }
 
 func (m *ScannerManager) updateStatus(stats ScanStatus) {
@@ -124,10 +115,32 @@ func (m *ScannerManager) updateStatus(stats ScanStatus) {
 	defer m.Unlock()
 	m.stats = stats
 
-	m.dumpStats()
+	// m.dumpStats()
 
 }
 
 func (m *ScannerManager) Close() {
-	m.Stop()
+	m.Lock()
+	defer m.Unlock()
+	m.stats.Running = false
+
+}
+
+func loadLastScanStatus(cached *nutsdb.DB) ScanStatus {
+
+	stats := ScanStatus{}
+
+	cached.View(
+		func(tx *nutsdb.Tx) error {
+
+			e, err := tx.Get(`sys`, []byte("last_scan_status"))
+			if err != nil {
+				return err
+			}
+
+			return json.Unmarshal(e.Value, &stats)
+
+		})
+
+	return stats
 }

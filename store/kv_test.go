@@ -1,4 +1,4 @@
-package schema
+package store
 
 import (
 	"bytes"

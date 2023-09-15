@@ -5,7 +5,6 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/bluele/gcache"
 	"github.com/nexptr/omnigram-server/log"
 	"go.uber.org/zap/zapcore"
 	"gorm.io/driver/mysql"
@@ -26,12 +25,6 @@ const (
 	DRSQLite Driver = "sqlite3"
 )
 
-type Store struct {
-	*gorm.DB
-	LRU gcache.Cache
-	// KV  *nutsdb.DB
-}
-
 // Opt PG 数据库配置
 type Opt struct {
 	Driver   Driver        `yaml:"driver" json:"driver"`       //数据库类型
@@ -45,13 +38,8 @@ type Opt struct {
 	Args     string        `yaml:"args" json:"args"`           // charset=utf8 //额外选项
 }
 
-func (s *Store) Close() {
-	sqlDB, _ := s.DB.DB()
-	sqlDB.Close()
-}
-
 // OpenDB 直接打开数据库连接 如果失败立即返回错误
-func OpenDB(opt *Opt) (*Store, error) {
+func OpenDB(opt *Opt) (*gorm.DB, error) {
 
 	db, err := gorm.Open(opt.DSN(), &gorm.Config{})
 	if err != nil {
@@ -61,17 +49,14 @@ func OpenDB(opt *Opt) (*Store, error) {
 	if opt.LogLevel == zapcore.DebugLevel {
 		db = db.Debug()
 	}
-	return &Store{
-		db,
-		gcache.New(512).LRU().Expiration(time.Second * 180).Build(),
-	}, nil
+	return db, nil
 
 }
 
 // WaitDB 打开数据库连接，如果失败则一直尝试重连直到成功为止
-func WaitDB(ctx context.Context, opt *Opt) (*Store, error) {
+func WaitDB(ctx context.Context, opt *Opt) (*gorm.DB, error) {
 
-	var store *Store
+	var store *gorm.DB
 	var err error
 
 	f := func() error {
@@ -85,10 +70,7 @@ func WaitDB(ctx context.Context, opt *Opt) (*Store, error) {
 			db = db.Debug()
 		}
 
-		store = &Store{
-			db,
-			gcache.New(512).LRU().Expiration(time.Second * 180).Build(),
-		}
+		store = db
 		return nil
 	}
 

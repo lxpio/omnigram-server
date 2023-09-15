@@ -16,7 +16,7 @@ import (
 )
 
 var (
-	orm *store.Store
+	orm *gorm.DB
 
 	apiKeyCache *expirable.LRU[string, int64]
 	// kv  schema.KV
@@ -51,9 +51,9 @@ func Close() {
 
 }
 
-func InitData(db *store.Store) error {
+func InitData(db *gorm.DB) error {
 
-	return db.DB.Transaction(func(tx *gorm.DB) error {
+	return db.Transaction(func(tx *gorm.DB) error {
 
 		if err := tx.AutoMigrate(&schema.User{}, &schema.APIToken{}); err != nil {
 			return err

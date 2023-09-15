@@ -25,7 +25,7 @@ func OauthMiddleware(c *gin.Context) {
 		}
 
 		//校验APIKey合法性
-		if token, err := schema.FirstTokenByAPIKey(orm.DB, apiKey); err == nil {
+		if token, err := schema.FirstTokenByAPIKey(orm, apiKey); err == nil {
 			apiKeyCache.Add(apiKey, token.UserID)
 			c.Set(middleware.XUserIDTag, token.UserID)
 			c.Next()
@@ -70,7 +70,7 @@ func handleSession(c *gin.Context) {
 	//session 有效时间小于1分钟 刷新session 过去事情
 	if diff > 60 {
 
-		if err := orm.DB.Table(`sessions`).Where(`id = ?`, session.Session).Update(`utime`, time.Now()).Error; err != nil {
+		if err := orm.Table(`sessions`).Where(`id = ?`, session.Session).Update(`utime`, time.Now()).Error; err != nil {
 			log.E("刷新session失败: ", err)
 		}
 		log.D("刷新session")
@@ -90,7 +90,7 @@ func getSession(c *gin.Context) (*schema.Session, error) {
 		return nil, err
 	}
 
-	return schema.FirstSessionByID(orm.DB, id)
+	return schema.FirstSessionByID(orm, id)
 
 }
 

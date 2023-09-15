@@ -11,10 +11,10 @@ import (
 
 	"github.com/nexptr/llmchain/llms"
 	"github.com/nexptr/omnigram-server/conf"
-	"github.com/nexptr/omnigram-server/epub/schema"
 	"github.com/nexptr/omnigram-server/log"
 	"github.com/nexptr/omnigram-server/store"
 	"go.uber.org/zap/zapcore"
+	"gorm.io/gorm"
 )
 
 var basePath string
@@ -26,7 +26,7 @@ func init() {
 	basePath = testDir + `/../../`
 }
 
-func initStore() *store.Store {
+func initStore() *gorm.DB {
 
 	opt := &store.Opt{
 		Driver:   store.DRSQLite,
@@ -60,11 +60,11 @@ func TestScanBooks(t *testing.T) {
 
 	log.I(`初始化扫描管理`)
 
-	kv, _ := schema.OpenLocalDir(basePath + `build`)
+	kv, _ := store.OpenLocalDir(basePath + `build`)
 
-	manager, _ := NewScannerManager(context.TODO(), cf, kv, initStore())
+	manager, _ := NewScannerManager(context.TODO(), cf.EpubOptions.DataPath, kv, initStore())
 
-	manager.Start(2)
+	manager.Start(2, false)
 	ticker := time.NewTicker(3 * time.Second)
 
 	for {

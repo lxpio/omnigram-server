@@ -3,7 +3,6 @@ package epub
 import (
 	"context"
 	"os"
-	"path/filepath"
 
 	"github.com/gin-gonic/gin"
 	"github.com/nexptr/omnigram-server/conf"
@@ -12,12 +11,12 @@ import (
 	"github.com/nexptr/omnigram-server/log"
 	"github.com/nexptr/omnigram-server/middleware"
 	"github.com/nexptr/omnigram-server/store"
-	"github.com/nexptr/omnigram-server/utils"
+	"gorm.io/gorm"
 )
 
 var (
-	orm *store.Store
-	kv  schema.KV
+	orm *gorm.DB
+	kv  store.KV
 
 	uploadPath string
 
@@ -31,7 +30,7 @@ func Initialize(ctx context.Context, cf *conf.Config) {
 	orm, _ = store.OpenDB(cf.EpubOptions.DBConfig)
 
 	//auotoMigrate
-	if err := orm.DB.AutoMigrate(&schema.Book{}); err != nil {
+	if err := orm.AutoMigrate(&schema.Book{}); err != nil {
 
 		panic(err)
 	}
@@ -45,27 +44,14 @@ func Initialize(ctx context.Context, cf *conf.Config) {
 		panic(`缓存目录不存在`)
 	}
 
-	kv, err = schema.OpenLocalDir(cf.EpubOptions.CachePath)
+	kv, err = store.OpenLocalDir(cf.EpubOptions.CachePath)
 
 	if err != nil {
 		// path/to/whatever does not exist
-
 		panic(err)
 	}
 
-	//初始化上传文件目录
-	uploadPath = filepath.Join(cf.EpubOptions.DataPath, `upload`)
-	os.MkdirAll(uploadPath, 0755)
-
-	//创建配置文件bucket
-
-	if err := kv.CreateBucket(ctx, utils.ConfigBucket); err != nil {
-		//记录创建失败
-
-		log.E(err)
-	}
-
-	manager, _ = selfhost.NewScannerManager(ctx, cf, kv, orm)
+	manager, _ = selfhost.NewScannerManager(ctx, cf.EpubOptions.DataPath, kv, orm)
 
 }
 

@@ -21,7 +21,7 @@ func createAPIKeyHandle(c *gin.Context) {
 
 	token := schema.NewAPIToken(userID)
 
-	if err := token.Save(orm.DB); err != nil {
+	if err := token.Save(orm); err != nil {
 		log.E(`创建APIKey失败：`, err.Error())
 		c.JSON(500, utils.ErrSaveToken)
 		return
@@ -36,7 +36,7 @@ func deleteAPIKeyHandle(c *gin.Context) {
 
 	id := c.Param(`id`)
 
-	if err := schema.DeleteAPIKey(orm.DB, id); err != nil {
+	if err := schema.DeleteAPIKey(orm, id); err != nil {
 		log.E(`删除APIKey失败：`, err.Error())
 		c.JSON(500, utils.ErrDeleteToken)
 		return
@@ -48,7 +48,7 @@ func getAPIKeysHandle(c *gin.Context) {
 
 	userID := c.GetInt64(middleware.XUserIDTag)
 
-	keys, err := schema.GetAPIKeysByUserID(orm.DB, userID)
+	keys, err := schema.GetAPIKeysByUserID(orm, userID)
 
 	if err != nil {
 		log.E(`获取APIKey失败：`, err.Error())

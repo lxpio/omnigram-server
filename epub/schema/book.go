@@ -13,6 +13,7 @@ import (
 
 	"github.com/cxbooks/epub"
 	"github.com/nexptr/omnigram-server/log"
+	"github.com/nexptr/omnigram-server/store"
 	"github.com/nexptr/omnigram-server/utils"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
@@ -132,14 +133,7 @@ func SearchBooks(store *gorm.DB, query *utils.Query) (BookResp, error) {
 		[]Book{},
 	}
 
-	items := []string{`title`, `author`}
-
-	for i := range items {
-		items[i] = items[i] + ` LIKE  '%` + query.Search + `%'`
-	}
-	sql := strings.Join(items, ` OR `)
-
-	tx := store.Model(Book{}).Where(sql)
+	tx := store.Model(Book{}).Where(`title LIKE ? OR author LIKE ?`, `%`+query.Search+`%`, `%`+query.Search+`%`)
 
 	{
 		tx = tx.Session(&gorm.Session{})
@@ -157,22 +151,14 @@ func SearchBooks(store *gorm.DB, query *utils.Query) (BookResp, error) {
 
 }
 
-// Save 存储图书元数据到数据库
+// Create 存储图书元数据到数据库
 func (book *Book) Create(store *gorm.DB) error {
-	//TODO before save data
-	// err = kv.Write(coverURL, fp, 0)
-	// 	if err != nil {
-	// 		log.E(`存储封面失败,`, book.Path, `失败：`, err.Error())
-	// 		return err
-	// 	}
 
 	//存储图书到数据库，如果唯一键 identifier 存在则忽略
 	return store.Clauses(clause.OnConflict{
 		Columns:   []clause.Column{{Name: "identifier"}},
 		DoNothing: true,
 	}).Create(book).Error
-
-	// return store.Save(book).Error
 
 }
 
@@ -289,7 +275,7 @@ func (m *Book) parseOPF(opf *epub.PackageDocument) {
 
 }
 
-func (m *Book) Save(ctx context.Context, db *gorm.DB, kv KV) error {
+func (m *Book) Save(ctx context.Context, db *gorm.DB, kv store.KV) error {
 
 	//存储图书到数据库
 	//TODO 处理重复问题
@@ -307,7 +293,7 @@ func (m *Book) Save(ctx context.Context, db *gorm.DB, kv KV) error {
 
 	}
 
-	obj := &Object{
+	obj := &store.Object{
 		Key:          m.CoverKey(),
 		Size:         m.Size,
 		LastModified: m.CTime,
