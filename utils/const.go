@@ -10,6 +10,8 @@ var (
 
 	ErrAPIKey = Response{Code: 401, Message: `api key is invalid`}
 
+	ErrForbidden = Response{Code: 403, Message: `forbidden`}
+
 	ErrInnerServer = Response{Code: 500}
 	ErrReqArgs     = Response{Code: 400, Message: `req args error`}
 
@@ -30,4 +32,6 @@ var (
 const (
 	//config 目录
 	ConfigBucket = `config`
+
+	DBContextKey = `context_db_key`
 )

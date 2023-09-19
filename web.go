@@ -13,6 +13,7 @@ import (
 	"github.com/nexptr/omnigram-server/log"
 	"github.com/nexptr/omnigram-server/store"
 	"github.com/nexptr/omnigram-server/user"
+	"github.com/nexptr/omnigram-server/utils"
 
 	"go.uber.org/zap/zapcore"
 )
@@ -50,10 +51,23 @@ func (m *App) StartContext(ctx context.Context) error {
 	// goroutine is used here, so we can use ctrl+c to terminate it
 	go func() {
 
-		user.Initialize(ctx, m.cf)
-		llm.Initialize(ctx, m.cf)
+		var dbctx context.Context
 
-		epub.Initialize(ctx, m.cf)
+		// 如果数据库为sqlite3，则将不同的模块子目录创建额外的sqlite3文件
+		if m.cf.DBConfig.Driver == store.DRSQLite {
+			dbctx = m.ctx
+		} else {
+			db, err := store.OpenDB(m.cf.DBConfig)
+			if err != nil {
+				log.E(`open db failed`, err)
+				os.Exit(1)
+			}
+			dbctx = context.WithValue(m.ctx, utils.DBContextKey, db)
+		}
+
+		user.Initialize(dbctx, m.cf)
+		epub.Initialize(dbctx, m.cf)
+		llm.Initialize(dbctx, m.cf)
 
 		log.I(`init http router...`)
 
@@ -108,14 +122,7 @@ func (m *App) initGinRoute() *gin.Engine {
 func InitServerData(cf *conf.Config) {
 	//初始化数据库连接
 
-	db, err := store.OpenDB(cf.EpubOptions.DBConfig)
-
-	if err != nil {
-		log.E(err)
-		os.Exit(1)
-	}
-
-	if err := user.InitData(db); err != nil {
+	if err := user.InitData(cf); err != nil {
 		log.E(err)
 		os.Exit(1)
 	}

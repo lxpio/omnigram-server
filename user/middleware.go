@@ -83,6 +83,18 @@ func handleSession(c *gin.Context) {
 	c.Next()
 }
 
+func AdminMiddleware(c *gin.Context) {
+
+	userID := c.GetInt64(middleware.XUserIDTag)
+
+	//简化处理，user ID 为1的即管理员
+	if userID == 1 {
+		c.Next()
+	}
+	c.AbortWithStatusJSON(http.StatusForbidden, utils.ErrForbidden)
+
+}
+
 // parseSessionUser 获取session 关联的用户信息，
 func getSession(c *gin.Context) (*schema.Session, error) {
 	id, err := c.Cookie(middleware.UserSessionTag)

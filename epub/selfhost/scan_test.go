@@ -9,7 +9,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/nexptr/llmchain/llms"
 	"github.com/nexptr/omnigram-server/conf"
 	"github.com/nexptr/omnigram-server/log"
 	"github.com/nexptr/omnigram-server/store"
@@ -45,13 +44,12 @@ func TestScanBooks(t *testing.T) {
 		APIAddr:      "",
 		LogLevel:     0,
 		LogDir:       "",
-		ModelOptions: []llms.ModelOptions{},
+		DBConfig:     &store.Opt{},
+		MetaDataPath: basePath + `build`,
 		EpubOptions: conf.EpubOptions{
 			DataPath:           basePath + `build/epub`,
-			CachePath:          basePath + `build`,
 			SaveCoverBesideSrc: false,
 			MaxEpubSize:        0,
-			DBConfig:           &store.Opt{},
 		},
 	}
 

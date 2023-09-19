@@ -59,3 +59,16 @@ func getAPIKeysHandle(c *gin.Context) {
 	c.JSON(200, utils.SUCCESS.WithData(keys))
 
 }
+
+func createAccountHandle(c *gin.Context) {
+	panic(`TODO`)
+}
+func listAccountHandle(c *gin.Context) {
+	panic(`TODO`)
+}
+func getAccountHandle(c *gin.Context) {
+	panic(`TODO`)
+}
+func deleteAccountHandle(c *gin.Context) {
+	panic(`TODO`)
+}

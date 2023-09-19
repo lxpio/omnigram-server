@@ -20,6 +20,10 @@ type Config struct {
 
 	LogDir string `yaml:"log_dir"`
 
+	MetaDataPath string `yaml:"metadata_path"`
+
+	DBConfig *store.Opt `json:"db_config" yaml:"db_config"`
+
 	ModelOptions []llms.ModelOptions `yaml:"model_options"`
 
 	EpubOptions EpubOptions `yaml:"epub_options"`
@@ -50,9 +54,22 @@ func InitConfig(path string) (*Config, error) {
 }
 
 type EpubOptions struct {
-	DataPath           string     `json:"data_path" yaml:"data_path"`
-	CachePath          string     `json:"cache_path" yaml:"cache_path"`
-	SaveCoverBesideSrc bool       `json:"save_cover_beside_src" yaml:"save_cover_beside_src"`
-	MaxEpubSize        int64      `json:"max_epub_size" yaml:"max_epub_size"`
-	DBConfig           *store.Opt `json:"db_config" yaml:"db_config"`
+	DataPath           string `json:"data_path" yaml:"data_path"`
+	SaveCoverBesideSrc bool   `json:"save_cover_beside_src" yaml:"save_cover_beside_src"`
+	MaxEpubSize        int64  `json:"max_epub_size" yaml:"max_epub_size"`
+}
+
+type ModelOptions struct {
+	Name     string      `yaml:"name"`
+	Settings interface{} `yaml:"parameters"`
+}
+
+// takes interface, marshals back to []byte, then unmarshals to desired struct
+func UnmarshalPlugin(pluginIn, pluginOut interface{}) error {
+
+	b, err := yaml.Marshal(pluginIn)
+	if err != nil {
+		return err
+	}
+	return yaml.Unmarshal(b, pluginOut)
 }

@@ -3,6 +3,7 @@ package epub
 import (
 	"context"
 	"os"
+	"path/filepath"
 
 	"github.com/gin-gonic/gin"
 	"github.com/nexptr/omnigram-server/conf"
@@ -11,6 +12,7 @@ import (
 	"github.com/nexptr/omnigram-server/log"
 	"github.com/nexptr/omnigram-server/middleware"
 	"github.com/nexptr/omnigram-server/store"
+	"github.com/nexptr/omnigram-server/utils"
 	"gorm.io/gorm"
 )
 
@@ -25,9 +27,22 @@ var (
 
 func Initialize(ctx context.Context, cf *conf.Config) {
 
-	log.I(`打开数据库连接...`)
+	if cf.DBConfig.Driver == store.DRSQLite {
+		log.I(`初始化数据库...`)
 
-	orm, _ = store.OpenDB(cf.EpubOptions.DBConfig)
+		var err error
+		orm, err = store.OpenDB(&store.Opt{
+			Driver: store.DRSQLite,
+			Host:   filepath.Join(cf.DBConfig.Host, `epub.db`),
+		})
+
+		if err != nil {
+			log.E(`open user db failed`, err)
+			os.Exit(1)
+		}
+	} else {
+		orm = ctx.Value(utils.DBContextKey).(*gorm.DB)
+	}
 
 	//auotoMigrate
 	if err := orm.AutoMigrate(&schema.Book{}); err != nil {
@@ -37,14 +52,7 @@ func Initialize(ctx context.Context, cf *conf.Config) {
 
 	log.I(`初始化扫描管理`)
 
-	_, err := os.Stat(cf.EpubOptions.CachePath)
-	if os.IsNotExist(err) {
-		// path/to/whatever does not exist
-		log.D(`缓存目录`, cf.EpubOptions.CachePath, `无法访问或者不存在 `, err)
-		panic(`缓存目录不存在`)
-	}
-
-	kv, err = store.OpenLocalDir(cf.EpubOptions.CachePath)
+	kv, err := store.OpenLocalDir(filepath.Join(cf.MetaDataPath, `epub`))
 
 	if err != nil {
 		// path/to/whatever does not exist

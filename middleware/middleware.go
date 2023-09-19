@@ -13,7 +13,8 @@ const (
 
 	UserSessionTag = `omni-session-id`
 
-	OathMD = `oauth`
+	OathMD  = `oauth`
+	AdminMD = `admin`
 )
 
 var middlewares map[string]gin.HandlerFunc
