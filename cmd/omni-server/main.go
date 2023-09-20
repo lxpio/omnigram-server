@@ -8,7 +8,6 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.com/nexptr/llmchain"
 	api "github.com/nexptr/omnigram-server"
 	"github.com/nexptr/omnigram-server/conf"
 	"github.com/nexptr/omnigram-server/log"
@@ -35,9 +34,9 @@ func main() {
 	flag.Parse()
 
 	if showVersion {
-		println(`llmchain version: `, llmchain.VERSION)
-		println(`git commit hash: `, llmchain.GitHash)
-		println(`utc build time: `, llmchain.BuildStamp)
+		println(`llmchain version: `, VERSION)
+		println(`git commit hash: `, GitHash)
+		println(`utc build time: `, BuildStamp)
 		os.Exit(0)
 	}
 

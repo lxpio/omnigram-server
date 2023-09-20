@@ -6,10 +6,10 @@ import (
 	"os"
 
 	"github.com/gin-gonic/gin"
-	"github.com/nexptr/llmchain"
+
+	"github.com/nexptr/omnigram-server/chat"
 	"github.com/nexptr/omnigram-server/conf"
 	"github.com/nexptr/omnigram-server/epub"
-	"github.com/nexptr/omnigram-server/llm"
 	"github.com/nexptr/omnigram-server/log"
 	"github.com/nexptr/omnigram-server/store"
 	"github.com/nexptr/omnigram-server/user"
@@ -28,10 +28,6 @@ type App struct {
 
 // NewAPPWithConfig with config
 func NewAPPWithConfig(cf *conf.Config) *App {
-
-	log.I(`llmchain version: `, llmchain.VERSION)
-	log.I(`git commit hash: `, llmchain.GitHash)
-	log.I(`UTC build time: `, llmchain.BuildStamp)
 
 	return &App{
 
@@ -67,7 +63,7 @@ func (m *App) StartContext(ctx context.Context) error {
 
 		user.Initialize(dbctx, m.cf)
 		epub.Initialize(dbctx, m.cf)
-		llm.Initialize(dbctx, m.cf)
+		chat.Initialize(dbctx, m.cf)
 
 		log.I(`init http router...`)
 
@@ -90,9 +86,8 @@ func (m *App) GracefulStop() {
 		log.D(`quit http server...`)
 		m.srv.Shutdown(m.ctx)
 	}
-
-	llm.Close()
-	llm.Close()
+	user.Close()
+	chat.Close()
 	epub.Close()
 
 }
@@ -113,7 +108,7 @@ func (m *App) initGinRoute() *gin.Engine {
 	router.SetTrustedProxies([]string{"0.0.0.0/0", "::"})
 
 	user.Setup(router)
-	llm.Setup(router)
+	chat.Setup(router)
 	epub.Setup(router)
 
 	return router

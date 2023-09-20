@@ -1,11 +1,11 @@
-package llm_test
+package chat_test
 
 import (
 	"path"
 	"runtime"
 	"testing"
 
-	"github.com/nexptr/llmchain/llms/openai"
+	"github.com/nexptr/omnigram-server/chat/llms/openai"
 	"github.com/nexptr/omnigram-server/conf"
 )
 

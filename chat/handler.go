@@ -1,4 +1,4 @@
-package llm
+package chat
 
 import (
 	"bytes"
@@ -9,7 +9,8 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/nexptr/llmchain/schema"
+
+	"github.com/nexptr/omnigram-server/chat/llms/schema"
 	"github.com/nexptr/omnigram-server/log"
 	"github.com/nexptr/omnigram-server/utils"
 )

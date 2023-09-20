@@ -7,7 +7,6 @@ require (
 	github.com/gin-gonic/gin v1.9.0
 	github.com/hashicorp/golang-lru/v2 v2.0.6
 	github.com/natefinch/lumberjack v2.0.0+incompatible
-	github.com/nexptr/llmchain v0.0.0-20230807130914-95f5f5d18bec
 	github.com/nutsdb/nutsdb v0.14.0
 	go.uber.org/zap v1.24.0
 	golang.org/x/crypto v0.8.0
@@ -19,6 +18,7 @@ require (
 )
 
 require (
+	github.com/BurntSushi/toml v1.3.2 // indirect
 	github.com/antlabs/stl v0.0.1 // indirect
 	github.com/antlabs/timer v0.0.11 // indirect
 	github.com/bwmarrin/snowflake v0.3.0 // indirect
@@ -58,5 +58,6 @@ require (
 	golang.org/x/sys v0.10.0 // indirect
 	golang.org/x/text v0.9.0 // indirect
 	google.golang.org/protobuf v1.31.0 // indirect
+	gopkg.in/natefinch/lumberjack.v2 v2.2.1 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )

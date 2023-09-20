@@ -1,15 +1,14 @@
-package llm
+package chat
 
 import (
 	"fmt"
 
-	"github.com/nexptr/llmchain/llms"
-	"github.com/nexptr/llmchain/llms/fschat"
-	"github.com/nexptr/llmchain/llms/openai"
+	"github.com/nexptr/omnigram-server/chat/llms"
+
+	"github.com/nexptr/omnigram-server/chat/llms/fschat"
+	"github.com/nexptr/omnigram-server/chat/llms/openai"
 	"github.com/nexptr/omnigram-server/conf"
 	"github.com/nexptr/omnigram-server/log"
-
-	"github.com/nexptr/llmchain/prompts"
 )
 
 // Manager LLM model manager
@@ -23,7 +22,7 @@ type Manager struct {
 
 	// promptsTemplates map[string]*template.Template
 
-	promptsTemplates *prompts.Render
+	// promptsTemplates *prompts.Render
 }
 
 func NewModelManager(cf *conf.Config) *Manager {
@@ -42,7 +41,7 @@ func (m *Manager) Load() error {
 	for _, o := range m.cf.ModelOptions {
 
 		//load
-		modeType := llms.GetModelType(o.Name)
+		modeType := conf.GetModelType(o.Name)
 
 		switch modeType {
 		// case llms.ModelOpenAI:
@@ -53,7 +52,7 @@ func (m *Manager) Load() error {
 		// 	m.loadedModels[o.Name] = llm
 		// 	log.I(`loaded llama.cpp from `, o.Name)
 
-		case llms.ModelFSChat:
+		case conf.ModelFSChat:
 
 			llm, err := fschat.FromYaml(o)
 			if err != nil {
@@ -114,11 +113,11 @@ func (m *Manager) LLMChain(modelName string, chainName string) (llms.LLM, error)
 
 }
 
-func (m *Manager) GetPrompt() *prompts.Render {
+// func (m *Manager) GetPrompt() *prompts.Render {
 
-	return m.promptsTemplates
+// 	return m.promptsTemplates
 
-}
+// }
 
 func (m *Manager) ListModels() []string {
 	ret := make([]string, len(m.loadedModels))
