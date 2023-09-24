@@ -3,10 +3,10 @@ package selfhost
 import (
 	"context"
 	"encoding/json"
-	"os"
 	"path/filepath"
 	"sync"
 
+	"github.com/nexptr/omnigram-server/conf"
 	"github.com/nexptr/omnigram-server/log"
 	"github.com/nexptr/omnigram-server/store"
 	"github.com/nexptr/omnigram-server/utils"
@@ -26,6 +26,7 @@ type ScanStatus struct {
 type ScannerManager struct {
 	// cf *conf.Config
 	dataPath string
+	metaPath string
 	kv       store.KV
 	orm      *gorm.DB
 
@@ -36,23 +37,24 @@ type ScannerManager struct {
 	stats ScanStatus
 }
 
-func NewScannerManager(ctx context.Context, dataPath string, kv store.KV, orm *gorm.DB) (*ScannerManager, error) {
+func NewScannerManager(ctx context.Context, cf *conf.Config, kv store.KV, orm *gorm.DB) (*ScannerManager, error) {
 
-	//初始化上传文件目录
-	uploadPath := filepath.Join(dataPath, `upload`)
-	os.MkdirAll(uploadPath, 0755)
+	metapath := filepath.Join(cf.MetaDataPath, utils.ConfigBucket)
 
 	db, err := nutsdb.Open(
 		nutsdb.DefaultOptions,
-		nutsdb.WithDir(filepath.Join(dataPath, utils.ConfigBucket)),
+		nutsdb.WithDir(metapath),
 	)
 
 	if err != nil {
 		return nil, err
 	}
 
+	defer db.Close()
+
 	scanner := &ScannerManager{
-		dataPath: dataPath,
+		dataPath: cf.EpubOptions.DataPath,
+		metaPath: metapath,
 		kv:       kv,
 		orm:      orm,
 		stats:    loadLastScanStatus(db),
@@ -91,13 +93,14 @@ func (m *ScannerManager) Start(maxThread int, refresh bool) {
 		return
 	}
 	log.I(`启动文件目录扫描`)
-	m.newScan(m.dataPath, maxThread, refresh)
+	m.newScan(maxThread, refresh)
 
 }
 
-func (m *ScannerManager) newScan(path string, maxThread int, refresh bool) {
+func (m *ScannerManager) newScan(maxThread int, refresh bool) {
 	m.Lock()
-	scan, err := NewScan(path) //new scanner
+
+	scan, err := NewScan(m.dataPath, m.metaPath) //new scanner
 
 	if err != nil {
 		m.Unlock()
@@ -114,8 +117,6 @@ func (m *ScannerManager) updateStatus(stats ScanStatus) {
 	m.Lock()
 	defer m.Unlock()
 	m.stats = stats
-
-	// m.dumpStats()
 
 }
 

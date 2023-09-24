@@ -11,7 +11,6 @@ import (
 
 	"github.com/nexptr/omnigram-server/epub/schema"
 	"github.com/nexptr/omnigram-server/log"
-	"github.com/nexptr/omnigram-server/utils"
 	"github.com/nutsdb/nutsdb"
 )
 
@@ -34,14 +33,15 @@ func (m *Scanner) Stop() {
 	}
 }
 
-func NewScan(root string) (*Scanner, error) {
+func NewScan(root, meta string) (*Scanner, error) {
 
 	db, err := nutsdb.Open(
 		nutsdb.DefaultOptions,
-		nutsdb.WithDir(filepath.Join(root, utils.ConfigBucket)),
+		nutsdb.WithDir(meta),
 	)
 
 	if err != nil {
+		log.E("打开metadata失败：", err.Error())
 		return nil, err
 	}
 
@@ -121,7 +121,8 @@ func (m *Scanner) startSingleThread(manager *ScannerManager, books <-chan *schem
 		})
 
 		//关闭扫描器
-
+		m.cached.Close()
+		m.cached = nil
 	}()
 
 }
@@ -215,7 +216,8 @@ func (m *Scanner) Start(manager *ScannerManager, maxThread int, refresh bool) {
 		//更新扫描状态
 		manager.updateStatus(status)
 		m.dumpStats(status)
-
+		m.cached.Close()
+		m.cached = nil
 	}()
 
 }

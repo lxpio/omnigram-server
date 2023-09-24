@@ -31,7 +31,7 @@ type Book struct {
 	SubTitle   string `json:"sub_title,omitempty" gorm:"type:varchar(255);comment:子标题"`
 	Language   string `json:"language" gorm:"type:varchar(50);comment:图书语言"`
 	CoverURL   string `json:"cover_url" gorm:"type:varchar(255);comment:封面URL"`
-	UUID       string `json:"uuid" gorm:"type:varchar(50);comment:图书UUI"`
+	UUID       string `json:"uuid" gorm:"type:varchar(50);comment:图书UUID"`
 	ISBN       string `json:"isbn" gorm:"type:varchar(50);comment:ISBN"`
 	ASIN       string `json:"asin" gorm:"type:varchar(50);comment:AWS ID"`
 	Identifier string `json:"identifier" gorm:"type:varchar(50);uniqueIndex;comment:唯一ID"`
@@ -44,7 +44,7 @@ type Book struct {
 	Description string   `json:"description,omitempty" gorm:"type:text;comment:描述信息"`
 	Tags        []string `json:"tags" gorm:"-"` //sqlite 没法存储数组
 	// Series is the series to which this book belongs to.
-	Series string `json:",omitempty" gorm:"type:varchar(200);comment:用户标签列表"`
+	Series string `json:",omitempty" gorm:"type:varchar(200);comment:xi l"`
 	// SeriesIndex is the position in the series to which the book belongs to.
 	SeriesIndex string `json:",omitempty" gorm:"type:varchar(200);comment:用户标签列表"`
 	PublishDate string `json:"pubdate" gorm:"type:varchar(50);comment:用户标签列表"`
@@ -63,21 +63,6 @@ type Book struct {
 type BookResp struct {
 	Total int    `json:"total"`
 	Books []Book `json:"books"`
-}
-
-func RandomBooks(store *gorm.DB, limit int) (BookResp, error) {
-
-	books := []Book{}
-
-	if limit == 0 {
-		log.I(`限制为空，调整为默认值10`)
-		limit = 10
-	}
-	// SELECT * FROM table ORDER BY RANDOM() LIMIT 1;
-	err := store.Table(`books`).Limit(limit).Order(`RANDOM()`).Find(&books).Error
-
-	return BookResp{len(books), books}, err
-
 }
 
 type BookStats struct {
@@ -100,8 +85,41 @@ func GetBookStats(store *gorm.DB) (BookStats, error) {
 
 }
 
+type ProcessBook struct {
+	Book
+	Process float32 `json:"process"`
+}
+
+// ReadingBooks 正在阅读的书籍列表
+func ReadingBooks(store *gorm.DB, userID int64, limit int) ([]ProcessBook, error) {
+
+	// books := []Book{}
+
+	processBook := []ProcessBook{}
+
+	if limit == 0 {
+		log.I(`限制为空，调整为默认值10`)
+		limit = 10
+	}
+
+	sql := `
+		SELECT B.*,R.process FROM books as B INNER JOIN 
+		( SELECT book_id,process FROM read_processes WHERE user_id = ? ORDER BY updated_at desc LIMIT ? )
+		 AS R
+		ON R.book_id = B.id;
+		`
+
+	err := store.Raw(sql, userID, limit).Scan(&processBook).Error
+
+	// SELECT * FROM table where count_visit = 0 ORDER BY ctime desc LIMIT 1;
+	// err := store.Table(`books`).Where(`id IN ( SELECT book_id FROM read_processes ORDER BY updated_at desc LIMIT ? )`, limit).Find(&books).Error
+	return processBook, err
+	// return BookResp{len(books), books}, err
+
+}
+
 // RecentBooks 最新导入到书籍
-func RecentBooks(store *gorm.DB, limit int) (BookResp, error) {
+func RecentBooks(store *gorm.DB, limit int, omits []int64) (BookResp, error) {
 
 	books := []Book{}
 
@@ -109,8 +127,37 @@ func RecentBooks(store *gorm.DB, limit int) (BookResp, error) {
 		log.I(`限制为空，调整为默认值10`)
 		limit = 10
 	}
-	// SELECT * FROM table where count_visit = 0 ORDER BY ctime desc LIMIT 1;
-	err := store.Table(`books`).Where(`count_visit = ?`, 0).Limit(limit).Order(`ctime desc`).Find(&books).Error
+	var err error
+	if len(omits) > 0 {
+		err = store.Table(`books`).Where(`count_visit = ? AND id NOT IN (?)`, 0, omits).Limit(limit).Order(`ctime desc`).Find(&books).Error
+
+	} else {
+		err = store.Table(`books`).Where(`count_visit = ? `, 0).Limit(limit).Order(`ctime desc`).Find(&books).Error
+
+	}
+
+	return BookResp{len(books), books}, err
+
+}
+
+func RandomBooks(store *gorm.DB, limit int, omits []int64) (BookResp, error) {
+
+	books := []Book{}
+
+	if limit == 0 {
+		log.I(`限制为空，调整为默认值10`)
+		limit = 10
+	}
+
+	var err error
+
+	if len(omits) > 0 {
+		err = store.Table(`books`).Where(`id NOT IN (?)`, omits).Limit(limit).Order(`RANDOM()`).Find(&books).Error
+
+	} else {
+		err = store.Table(`books`).Limit(limit).Order(`RANDOM()`).Find(&books).Error
+
+	}
 
 	return BookResp{len(books), books}, err
 

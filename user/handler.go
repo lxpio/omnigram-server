@@ -1,6 +1,8 @@
 package user
 
 import (
+	"strconv"
+
 	"github.com/gin-gonic/gin"
 	"github.com/nexptr/omnigram-server/log"
 	"github.com/nexptr/omnigram-server/middleware"
@@ -13,6 +15,30 @@ func loginHandle(c *gin.Context) {
 
 func logoutHandle(c *gin.Context) {
 
+}
+
+func getUserInfoHandle(c *gin.Context) {
+
+	userID := c.GetInt64(middleware.XUserIDTag)
+
+	key := userKeyPrefix + strconv.FormatInt(userID, 10)
+
+	if user, ok := userInfoCache.Get(key); ok {
+		c.JSON(200, utils.SUCCESS.WithData(user))
+		return
+	}
+
+	user, err := schema.FirstUserByID(orm, userID)
+
+	if err != nil {
+		log.E(`获取用户信息失败：`, err.Error())
+		c.JSON(404, utils.ErrGetUserInfo)
+		return
+	}
+
+	userInfoCache.Add(key, user)
+
+	c.JSON(200, utils.SUCCESS.WithData(user))
 }
 
 func createAPIKeyHandle(c *gin.Context) {
@@ -47,6 +73,8 @@ func deleteAPIKeyHandle(c *gin.Context) {
 func getAPIKeysHandle(c *gin.Context) {
 
 	userID := c.GetInt64(middleware.XUserIDTag)
+
+	log.D(`userID`, userID)
 
 	keys, err := schema.GetAPIKeysByUserID(orm, userID)
 

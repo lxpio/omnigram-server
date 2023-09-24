@@ -44,7 +44,7 @@ func TestScanBooks(t *testing.T) {
 		APIAddr:      "",
 		LogLevel:     0,
 		LogDir:       "",
-		DBConfig:     &store.Opt{},
+		DBOption:     &store.Opt{},
 		MetaDataPath: basePath + `build`,
 		EpubOptions: conf.EpubOptions{
 			DataPath:           basePath + `build/epub`,
@@ -60,7 +60,7 @@ func TestScanBooks(t *testing.T) {
 
 	kv, _ := store.OpenLocalDir(basePath + `build`)
 
-	manager, _ := NewScannerManager(context.TODO(), cf.EpubOptions.DataPath, kv, initStore())
+	manager, _ := NewScannerManager(context.TODO(), cf, kv, initStore())
 
 	manager.Start(2, false)
 	ticker := time.NewTicker(3 * time.Second)

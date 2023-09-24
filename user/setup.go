@@ -14,6 +14,7 @@ import (
 	"github.com/nexptr/omnigram-server/user/schema"
 	"github.com/nexptr/omnigram-server/utils"
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 
 	"github.com/hashicorp/golang-lru/v2/expirable"
 )
@@ -21,19 +22,20 @@ import (
 var (
 	orm *gorm.DB
 
-	apiKeyCache *expirable.LRU[string, int64]
+	apiKeyCache   *expirable.LRU[string, int64]
+	userInfoCache *expirable.LRU[string, *schema.User]
 	// kv  schema.KV
 )
 
 func Initialize(ctx context.Context, cf *conf.Config) {
 
-	if cf.DBConfig.Driver == store.DRSQLite {
+	if cf.DBOption.Driver == store.DRSQLite {
 		log.I(`初始化数据库...`)
 
 		var err error
 		orm, err = store.OpenDB(&store.Opt{
 			Driver: store.DRSQLite,
-			Host:   filepath.Join(cf.DBConfig.Host, `omnigram.db`),
+			Host:   filepath.Join(cf.DBOption.Host, `omnigram.db`),
 		})
 
 		if err != nil {
@@ -47,6 +49,7 @@ func Initialize(ctx context.Context, cf *conf.Config) {
 	log.I(`设置5分钟超时的LRU缓存...`)
 	// apiKeyCache = expirable.NewLRU[string, int64](15, nil, time.Millisecond*10)
 	apiKeyCache = expirable.NewLRU[string, int64](15, nil, time.Second*300)
+	userInfoCache = expirable.NewLRU[string, *schema.User](15, nil, time.Second*300)
 
 	middleware.Register(middleware.OathMD, OauthMiddleware)
 	middleware.Register(middleware.AdminMD, AdminMiddleware)
@@ -61,6 +64,8 @@ func Setup(router *gin.Engine) {
 	router.POST("/user/login", loginHandle)
 
 	router.DELETE("/user/logout", oauthMD, logoutHandle)
+
+	router.GET("/user/info", oauthMD, getUserInfoHandle)
 
 	router.DELETE("/user/apikeys/:id", oauthMD, deleteAPIKeyHandle)
 	router.POST("/user/accounts/:id/apikeys", oauthMD, createAPIKeyHandle)
@@ -82,16 +87,16 @@ func InitData(cf *conf.Config) error {
 	var db *gorm.DB
 	var err error
 
-	log.I(`初始化数据库...`)
-	if cf.DBConfig.Driver == store.DRSQLite {
-
+	if cf.DBOption.Driver == store.DRSQLite {
+		log.I(`初始化数据库: ` + cf.DBOption.Host + `omnigram.db ...`)
 		db, err = store.OpenDB(&store.Opt{
 			Driver: store.DRSQLite,
-			Host:   filepath.Join(cf.DBConfig.Host, `omnigram.db`),
+			Host:   filepath.Join(cf.DBOption.Host, `omnigram.db`),
 		})
 
 	} else {
-		db, err = store.OpenDB(cf.DBConfig)
+		log.I(`初始化数据库...`)
+		db, err = store.OpenDB(cf.DBOption)
 	}
 
 	if err != nil {
@@ -105,23 +110,27 @@ func InitData(cf *conf.Config) error {
 			return err
 		}
 
-		user := schema.User{
+		user := &schema.User{
 			UserName:   "admin",
 			Credential: "123456",
+			RoleID:     1,
 		}
 
-		if err := tx.Create(&user).Error; err != nil {
-			log.E(`初始化用户失败`, err)
+		if err := tx.Clauses(clause.OnConflict{
+			Columns:   []clause.Column{{Name: "user_name"}},
+			DoNothing: true,
+		}).Create(user).Error; err != nil {
 			return err
 		}
 
-		apiKey := schema.NewAPIToken(user.UserID)
-		if err := tx.Create(&apiKey).Error; err != nil {
-			log.E(`初始化用户APIKey失败`, err)
-			return err
+		if user.ID == 1 {
+			apiKey := schema.NewAPIToken(user.ID)
+			if err := tx.Create(&apiKey).Error; err != nil {
+				log.E(`初始化用户APIKey失败`, err)
+				return err
+			}
+			log.I(`初始化数据成功, 用户信息: `, user.UserName, `, 初始 APIKey: `, apiKey.APIKey)
 		}
-
-		log.I(`初始化数据成功, 用户信息: `, user.UserName, `, 初始 APIKey: `, apiKey.APIKey)
 
 		return nil
 

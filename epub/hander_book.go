@@ -9,6 +9,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/nexptr/omnigram-server/epub/schema"
 	"github.com/nexptr/omnigram-server/log"
+	"github.com/nexptr/omnigram-server/middleware"
 	"github.com/nexptr/omnigram-server/utils"
 )
 
@@ -122,7 +123,7 @@ func RecentBook(c *gin.Context) {
 		c.JSON(200, utils.ErrReqArgs.WithMessage(err.Error()))
 		return
 	}
-	recentBooks, err := schema.RecentBooks(orm, req.Recent)
+	recentBooks, err := schema.RecentBooks(orm, req.Recent, nil)
 
 	if err != nil {
 		log.I(`用户登录参数异常`, err)
@@ -177,7 +178,9 @@ func Index(c *gin.Context) {
 		return
 	}
 
-	randBooks, err := schema.RandomBooks(orm, req.Random)
+	userID := c.GetInt64(middleware.XUserIDTag)
+
+	readings, err := schema.ReadingBooks(orm, userID, req.Random)
 
 	if err != nil {
 		log.I(`用户登录参数异常`, err)
@@ -185,7 +188,21 @@ func Index(c *gin.Context) {
 		return
 	}
 
-	recentBooks, err := schema.RecentBooks(orm, req.Recent)
+	idList := make([]int64, 0)
+
+	for _, v := range readings {
+		idList = append(idList, v.ID)
+	}
+
+	randBooks, err := schema.RandomBooks(orm, req.Random, idList)
+
+	if err != nil {
+		log.I(`用户登录参数异常`, err)
+		c.JSON(200, utils.ErrInnerServer.WithMessage(err.Error()))
+		return
+	}
+
+	recentBooks, err := schema.RecentBooks(orm, req.Recent, idList)
 
 	if err != nil {
 		log.I(`用户登录参数异常`, err)
@@ -194,8 +211,9 @@ func Index(c *gin.Context) {
 	}
 
 	data := map[string]interface{}{
-		"random": randBooks.Books,
-		"recent": recentBooks.Books,
+		"reading": readings,
+		"random":  randBooks.Books,
+		"recent":  recentBooks.Books,
 	}
 
 	c.JSON(200, utils.SUCCESS.WithData(data))
@@ -215,5 +233,76 @@ func GetBookStats(c *gin.Context) {
 	}
 
 	c.JSON(200, utils.SUCCESS.WithData(stats))
+
+}
+
+// 创建阅读进度
+func startReadBookHandle(c *gin.Context) {
+	dentifier := c.Param(`book_id`)
+
+	if dentifier == "" {
+		log.E(`图书ID为空`)
+		c.JSON(200, utils.ErrReqArgs)
+		return
+	}
+
+	book, err := schema.FirstBookByIdentifier(orm, dentifier)
+
+	if err != nil {
+		log.E(`获取图书失败：`, err)
+		c.JSON(200, utils.ErrNoFound)
+		return
+	}
+
+	userID := c.GetInt64(middleware.XUserIDTag)
+
+	_, err = book.CreateReadProcess(orm, userID)
+
+	if err != nil {
+		log.E(`创建阅读进度失败：`, err)
+		c.JSON(200, utils.ErrInnerServer)
+		return
+	}
+
+	c.JSON(200, utils.SUCCESS)
+
+}
+
+func updateReadBookHandle(c *gin.Context) {
+	dentifier := c.Param(`book_id`)
+
+	if dentifier == "" {
+		log.E(`图书ID为空`)
+		c.JSON(200, utils.ErrReqArgs)
+		return
+	}
+
+	req := &schema.ReadProcess{}
+
+	if err := c.ShouldBind(req); err != nil {
+		log.I(`用户登录参数异常`, err)
+		c.JSON(200, utils.ErrReqArgs.WithMessage(err.Error()))
+		return
+	}
+
+	book, err := schema.FirstBookByIdentifier(orm, dentifier)
+
+	if err != nil {
+		log.E(`获取图书失败：`, err)
+		c.JSON(200, utils.ErrNoFound)
+		return
+	}
+
+	req.UserID = c.GetInt64(middleware.XUserIDTag)
+	req.BookID = book.ID
+
+	err = req.Update(orm)
+	if err != nil {
+		log.E(`创建阅读进度失败：`, err)
+		c.JSON(500, utils.ErrInnerServer)
+		return
+	}
+
+	c.JSON(200, utils.SUCCESS.WithData(req))
 
 }

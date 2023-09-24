@@ -27,6 +27,7 @@ var (
 	ErrSaveToken   = Response{Code: 1006, Message: `save token error`}
 	ErrDeleteToken = Response{Code: 1007, Message: `delete token error`}
 	ErrGetTokens   = Response{Code: 1008, Message: `get tokens failed`}
+	ErrGetUserInfo = Response{Code: 1009, Message: `get user info error`}
 )
 
 const (

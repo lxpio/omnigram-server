@@ -12,12 +12,20 @@ import (
 	"github.com/nexptr/omnigram-server/utils"
 )
 
+const (
+	apiKeyPrefix  = "api-key:"
+	userKeyPrefix = "user-key:"
+)
+
 // OauthMiddleware 认证中间件，如果seesion 合法将用户ID存入上下文
 func OauthMiddleware(c *gin.Context) {
 
 	if apiKey := getAPIKey(c); apiKey != `` {
 
-		if userID, ok := apiKeyCache.Get(apiKey); ok {
+		key := apiKeyPrefix + apiKey
+
+		if userID, ok := apiKeyCache.Get(key); ok {
+
 			c.Set(middleware.XUserIDTag, userID)
 			c.Next()
 			return
@@ -26,7 +34,8 @@ func OauthMiddleware(c *gin.Context) {
 
 		//校验APIKey合法性
 		if token, err := schema.FirstTokenByAPIKey(orm, apiKey); err == nil {
-			apiKeyCache.Add(apiKey, token.UserID)
+
+			apiKeyCache.Add(key, token.UserID)
 			c.Set(middleware.XUserIDTag, token.UserID)
 			c.Next()
 			return
@@ -78,7 +87,7 @@ func handleSession(c *gin.Context) {
 	}
 
 	c.Set(middleware.XUserInfoTag, session.UserInfo)
-	c.Set(middleware.XUserIDTag, session.UserInfo.UserID)
+	c.Set(middleware.XUserIDTag, session.UserInfo.ID)
 
 	c.Next()
 }
@@ -86,7 +95,7 @@ func handleSession(c *gin.Context) {
 func AdminMiddleware(c *gin.Context) {
 
 	userID := c.GetInt64(middleware.XUserIDTag)
-
+	log.D("userID: ", userID)
 	//简化处理，user ID 为1的即管理员
 	if userID == 1 {
 		c.Next()

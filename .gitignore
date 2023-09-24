@@ -4,3 +4,4 @@ build
 *.bin
 *.log
 testdata
+.DS_Store

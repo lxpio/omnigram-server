@@ -3,6 +3,7 @@ package conf
 import (
 	"fmt"
 	"os"
+	"path/filepath"
 
 	"github.com/nexptr/omnigram-server/store"
 	"go.uber.org/zap/zapcore"
@@ -21,20 +22,11 @@ type Config struct {
 
 	MetaDataPath string `yaml:"metadata_path"`
 
-	DBConfig *store.Opt `json:"db_config" yaml:"db_config"`
+	DBOption *store.Opt `json:"db_options" yaml:"db_options"`
 
 	ModelOptions []ModelOptions `yaml:"model_options"`
 
 	EpubOptions EpubOptions `yaml:"epub_options"`
-}
-
-func defaultConfig() *Config {
-	cf := &Config{
-		APIAddr:  "0.0.0.0:8080",
-		LogLevel: zapcore.InfoLevel,
-		LogDir:   "./logs",
-	}
-	return cf
 }
 
 func InitConfig(path string) (*Config, error) {
@@ -49,7 +41,29 @@ func InitConfig(path string) (*Config, error) {
 	if err := yaml.Unmarshal(f, cf); err != nil {
 		return nil, fmt.Errorf("cannot unmarshal config file: %w", err)
 	}
-	return cf, nil
+
+	if cf.DBOption == nil {
+		cf.DBOption = &store.Opt{
+			Driver:   "sqlite3",
+			Host:     filepath.Join(cf.MetaDataPath, "db"),
+			LogLevel: cf.LogLevel,
+		}
+
+		err = os.Mkdir(cf.DBOption.Host, 0755)
+	}
+	cf.DBOption.LogLevel = cf.LogLevel
+
+	return cf, err
+}
+
+func defaultConfig() *Config {
+	cf := &Config{
+		APIAddr:      "0.0.0.0:8080",
+		LogLevel:     zapcore.InfoLevel,
+		LogDir:       "./logs",
+		MetaDataPath: "./data",
+	}
+	return cf
 }
 
 type EpubOptions struct {

@@ -50,10 +50,10 @@ func (m *App) StartContext(ctx context.Context) error {
 		var dbctx context.Context
 
 		// 如果数据库为sqlite3，则将不同的模块子目录创建额外的sqlite3文件
-		if m.cf.DBConfig.Driver == store.DRSQLite {
+		if m.cf.DBOption.Driver == store.DRSQLite {
 			dbctx = m.ctx
 		} else {
-			db, err := store.OpenDB(m.cf.DBConfig)
+			db, err := store.OpenDB(m.cf.DBOption)
 			if err != nil {
 				log.E(`open db failed`, err)
 				os.Exit(1)
@@ -116,6 +116,11 @@ func (m *App) initGinRoute() *gin.Engine {
 
 func InitServerData(cf *conf.Config) {
 	//初始化数据库连接
+
+	if err := epub.InitData(cf); err != nil {
+		log.E(err)
+		os.Exit(1)
+	}
 
 	if err := user.InitData(cf); err != nil {
 		log.E(err)

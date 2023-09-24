@@ -8,17 +8,16 @@ import (
 	"gorm.io/gorm"
 )
 
+// User 用户表
 type User struct {
-	UserID     int64     `json:"user_id" form:"user_id" gorm:"primaryKey;comment:用户ID(UUID)"`
+	ID         int64     `json:"id" form:"id" gorm:"primaryKey;comment:用户ID(UUID)"`
 	Email      string    `json:"email" form:"email"  gorm:"type:varchar(100);comment:用户邮箱"`
 	Mobile     string    `json:"mobile" form:"mobile"   gorm:"type:varchar(50);comment:用户手机"`
 	UserName   string    `json:"user_name" form:"user_name" gorm:"uniqueIndex:idx_users_user_name;type:varchar(100);comment:用户名"`
+	RoleID     int64     `json:"role_id" gorm:"role_id;comment:用户角色"` //
 	NickName   string    `json:"nick_name" form:"nick_name" gorm:"type:varchar(100); comment:用户昵称"`
 	AvatarUrl  string    `json:"avatar_url" form:"avatar_url" gorm:"type:varchar(255); comment:用户头像图片地址"`
-	Language   string    `json:"language" form:"language" gorm:"type:varchar(20); comment:用户默认语言选项"`
-	Tags       string    `json:"tags" form:"tags" gorm:"type:varchar(255); comment:用户标签列表"`
 	WxUnionID  string    `json:"wx_unionid" form:"wx_unionid" gorm:"type:varchar(50); comment:微信unionID"`
-	RoleID     int64     `json:"role_id" gorm:"role_id"`
 	Credential string    `json:"credential" form:"credential" gorm:"type:varchar(100); comment:加密密码"`
 	Locked     bool      `json:"locked" form:"locked" gorm:"comment:用户是否被锁定"`
 	MFASwitch  bool      `json:"mfa_switch" form:"mfa_switch" gorm:"comment:mfa虚拟认证"`
@@ -30,6 +29,22 @@ type User struct {
 func (m *User) Masking() *User {
 	m.Credential = ``
 	return m
+}
+
+// FirstUserByAccount 根据 邮箱，手机号，用户名 获取用户
+func FirstUserByID(store *gorm.DB, id int64) (*User, error) {
+
+	if id < 0 {
+		return nil, errors.New(`账号信息为空`)
+	}
+	user := &User{ID: id}
+	err := store.Model(user).First(&user).Error
+
+	if err != nil {
+		return user.Masking(), err
+	}
+
+	return user, err
 }
 
 // FirstUserByAccount 根据 邮箱，手机号，用户名 获取用户
@@ -60,7 +75,7 @@ func encryptPassword(raw string) (credential string) {
 func (m *User) CreateSession(store *gorm.DB, UA, From, IP string) (*Session, error) {
 	//zlog.D("VerifyPassword : ", m.Credential)
 	session := &Session{
-		UserID:    m.UserID,
+		UserID:    m.ID,
 		UserInfo:  m,
 		UserAgent: UA,
 		FromUrl:   From,

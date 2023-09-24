@@ -27,13 +27,14 @@ var (
 
 func Initialize(ctx context.Context, cf *conf.Config) {
 
-	if cf.DBConfig.Driver == store.DRSQLite {
+	if cf.DBOption.Driver == store.DRSQLite {
 		log.I(`初始化数据库...`)
 
 		var err error
 		orm, err = store.OpenDB(&store.Opt{
-			Driver: store.DRSQLite,
-			Host:   filepath.Join(cf.DBConfig.Host, `epub.db`),
+			Driver:   store.DRSQLite,
+			Host:     filepath.Join(cf.DBOption.Host, `epub.db`),
+			LogLevel: cf.LogLevel,
 		})
 
 		if err != nil {
@@ -42,12 +43,6 @@ func Initialize(ctx context.Context, cf *conf.Config) {
 		}
 	} else {
 		orm = ctx.Value(utils.DBContextKey).(*gorm.DB)
-	}
-
-	//auotoMigrate
-	if err := orm.AutoMigrate(&schema.Book{}); err != nil {
-
-		panic(err)
 	}
 
 	log.I(`初始化扫描管理`)
@@ -59,7 +54,7 @@ func Initialize(ctx context.Context, cf *conf.Config) {
 		panic(err)
 	}
 
-	manager, _ = selfhost.NewScannerManager(ctx, cf.EpubOptions.DataPath, kv, orm)
+	manager, _ = selfhost.NewScannerManager(ctx, cf, kv, orm)
 
 }
 
@@ -82,10 +77,15 @@ func Setup(router *gin.Engine) {
 	// router.GET("/book/nav", BookNav)
 	book.GET("/upload", bookUploadHandle)
 
+	book.GET(`/download/books/:book_id`, middleware.Get(middleware.OathMD), bookDownloadHandle)
+
+	book.POST(`/read/books/:book_id`, startReadBookHandle)
+	book.PUT(`/read/books/:book_id`, updateReadBookHandle)
+
 	router.GET("/books/:book_id", middleware.Get(middleware.OathMD), BookDetail)
 	// router.GET("/books/:book_id/delete", BookDelete)
 	// router.GET("/books/:book_id/edit", BookEdit)
-	router.GET(`/books/:book_id/download`, middleware.Get(middleware.OathMD), bookDownloadHandle)
+
 	// router.GET("/books/:book_id/push", BookPush)
 	// router.GET("/books/:book_id/refer", BookRefer)
 	// router.GET("/read/:book_id", BookRead)
@@ -93,5 +93,57 @@ func Setup(router *gin.Engine) {
 }
 
 func Close() {
+
+}
+
+func InitData(cf *conf.Config) error {
+
+	var db *gorm.DB
+	var err error
+
+	metapath := filepath.Join(cf.MetaDataPath, `epub`)
+
+	//metapath 路径不存在则创建
+	if _, err := os.Stat(metapath); os.IsNotExist(err) {
+		if err := os.Mkdir(metapath, 0755); err != nil {
+			panic(err)
+		}
+	}
+
+	//初始化上传文件目录
+	os.MkdirAll(filepath.Join(cf.EpubOptions.DataPath, `upload`), 0755)
+	os.MkdirAll(filepath.Join(cf.MetaDataPath, utils.ConfigBucket), 0755)
+
+	if cf.DBOption.Driver == store.DRSQLite {
+		log.I(`初始化数据库: ` + cf.DBOption.Host + `epub.db ...`)
+		db, err = store.OpenDB(&store.Opt{
+			Driver:   store.DRSQLite,
+			Host:     filepath.Join(cf.DBOption.Host, `epub.db`),
+			LogLevel: cf.LogLevel,
+		})
+
+	} else {
+		log.I(`初始化数据库...`)
+		db, err = store.OpenDB(cf.DBOption)
+	}
+
+	if err != nil {
+		log.E(err)
+		os.Exit(1)
+	}
+
+	return db.Transaction(func(tx *gorm.DB) error {
+
+		//auotoMigrate
+		if err := tx.AutoMigrate(&schema.Book{}, &schema.FavoriteBook{}, &schema.ReadProcess{}); err != nil {
+
+			return err
+		}
+
+		log.I(`初始化书籍表成功。`)
+
+		return nil
+
+	})
 
 }
