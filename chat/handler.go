@@ -76,6 +76,7 @@ func embeddingsEndpointHandler() gin.HandlerFunc {
 		if err := c.Bind(input); err != nil {
 			// return nil, fmt.Errorf("failed reading parameters from request: ", err.Error())
 			log.E("failed reading parameters from request: ", err.Error())
+
 			c.JSON(http.StatusBadRequest, utils.ErrReqArgs.WithMessage(err.Error()))
 			return
 		}
