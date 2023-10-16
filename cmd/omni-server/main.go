@@ -14,7 +14,6 @@ import (
 )
 
 var (
-	VERSION    = ""
 	BUILDSTAMP = ""
 	GITHASH    = ""
 
@@ -34,7 +33,7 @@ func main() {
 	flag.Parse()
 
 	if showVersion {
-		println(`omni-server version: `, VERSION)
+		println(`omni-server version: `, conf.Version)
 		println(`git commit hash: `, GITHASH)
 		println(`utc build time: `, BUILDSTAMP)
 		os.Exit(0)

@@ -10,23 +10,25 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
+var Version = ""
+
 // Config 定义 配置结构图
 type Config struct {
 
 	//APIAddr , default: 0.0.0.0:8080
-	APIAddr string `yaml:"api_addr"`
+	APIAddr string `yaml:"api_addr" json:"api_addr"`
 
-	LogLevel zapcore.Level `yaml:"log_level"`
+	LogLevel zapcore.Level `yaml:"log_level" json:"log_level"`
 
-	LogDir string `yaml:"log_dir"`
+	LogDir string `yaml:"log_dir" json:"log_dir"`
 
-	MetaDataPath string `yaml:"metadata_path"`
+	MetaDataPath string `yaml:"metadata_path" json:"metadata_path"`
 
-	DBOption *store.Opt `json:"db_options" yaml:"db_options"`
+	DBOption *store.Opt `yaml:"db_options" json:"db_options"`
 
-	ModelOptions []ModelOptions `yaml:"model_options"`
+	ModelOptions []ModelOptions `yaml:"model_options" json:"model_options"`
 
-	EpubOptions EpubOptions `yaml:"epub_options"`
+	EpubOptions EpubOptions `yaml:"epub_options" json:"epub_options"`
 }
 
 func InitConfig(path string) (*Config, error) {
@@ -61,7 +63,7 @@ func defaultConfig() *Config {
 		APIAddr:      "0.0.0.0:8080",
 		LogLevel:     zapcore.InfoLevel,
 		LogDir:       "./logs",
-		MetaDataPath: "./data",
+		MetaDataPath: "./metadata",
 	}
 	return cf
 }

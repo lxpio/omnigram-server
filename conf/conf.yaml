@@ -1,13 +1,13 @@
 # http server listen address
-api_addr: '0.0.0.0:8080'
+api_addr: '0.0.0.0:80'
 
 
 log_level: 'debug'
 
-log_dir: 'stdout'
+#log_dir: 'stdout' 
+log_dir: './log'
 
-
-metadata_path: '/data/metadata'
+metadata_path: '/metadata'
 
 db_options:
   # driver: 'postgres'
@@ -19,11 +19,11 @@ db_options:
   # dbname: 'epub'
   # sslmode: 'disable'
   driver: 'sqlite3'
-  host: '/data/omnigram.db'
+  host: '/metadata'
 
 epub_options:
   #data_path epub files dirctories
-  data_path: '/data/epub' 
+  data_path: '/epub' 
   save_cover_beside_src: false
   max_epub_size: 1000000
 
@@ -39,7 +39,7 @@ model_options:
 - name: vicuna-13b-v1.5-16k
   parameters:
     endpoints: 
-    - 'http://127.0.0.1:21002'
+    - 'http://vicuna-service:21002'
     api_key: 'sk-xxxxxxx'
     top_p: 80
     top_k: 0.9

@@ -11,7 +11,7 @@ fi
 
 # if command app only, add use default args
 if [ "$1" = 'omni-server' ] && [ "$#" -eq 1 ]; then
-    exec /bin/omni-server -conf ${CONFIG_FILE}
+    exec omni-server -conf ${CONFIG_FILE}
 fi
 
 exec "$@"

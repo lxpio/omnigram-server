@@ -5,3 +5,5 @@ build
 *.log
 testdata
 .DS_Store
+apidoc
+*.wav

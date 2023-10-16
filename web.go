@@ -7,12 +7,10 @@ import (
 
 	"github.com/gin-gonic/gin"
 
-	"github.com/nexptr/omnigram-server/chat"
+	"github.com/nexptr/omnigram-server/api"
 	"github.com/nexptr/omnigram-server/conf"
-	"github.com/nexptr/omnigram-server/epub"
 	"github.com/nexptr/omnigram-server/log"
 	"github.com/nexptr/omnigram-server/store"
-	"github.com/nexptr/omnigram-server/user"
 	"github.com/nexptr/omnigram-server/utils"
 
 	"go.uber.org/zap/zapcore"
@@ -61,9 +59,7 @@ func (m *App) StartContext(ctx context.Context) error {
 			dbctx = context.WithValue(m.ctx, utils.DBContextKey, db)
 		}
 
-		user.Initialize(dbctx, m.cf)
-		epub.Initialize(dbctx, m.cf)
-		chat.Initialize(dbctx, m.cf)
+		api.Initialize(dbctx, m.cf)
 
 		log.I(`init http router...`)
 
@@ -86,9 +82,7 @@ func (m *App) GracefulStop() {
 		log.D(`quit http server...`)
 		m.srv.Shutdown(m.ctx)
 	}
-	user.Close()
-	chat.Close()
-	epub.Close()
+	api.Close()
 
 }
 
@@ -107,9 +101,7 @@ func (m *App) initGinRoute() *gin.Engine {
 	//这样设置默认可能是不安全的，因为头部字段可以伪造，需求前置的反向代理的xff 确保是对的
 	router.SetTrustedProxies([]string{"0.0.0.0/0", "::"})
 
-	user.Setup(router)
-	chat.Setup(router)
-	epub.Setup(router)
+	api.Setup(router)
 
 	return router
 }
@@ -117,14 +109,6 @@ func (m *App) initGinRoute() *gin.Engine {
 func InitServerData(cf *conf.Config) {
 	//初始化数据库连接
 
-	if err := epub.InitData(cf); err != nil {
-		log.E(err)
-		os.Exit(1)
-	}
-
-	if err := user.InitData(cf); err != nil {
-		log.E(err)
-		os.Exit(1)
-	}
+	api.InitData(cf)
 
 }

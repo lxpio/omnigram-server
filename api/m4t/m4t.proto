@@ -1,0 +1,16 @@
+syntax = "proto3";
+package m4t;
+option go_package = "github.com/omnigram-server/api/m4t";
+message TextRequest {
+  string text = 1;
+  string lang = 2;
+  string audio_id = 3;
+}
+
+message AudioResponse {
+  bytes audio_data = 1;
+}
+
+service TextToAudio {
+  rpc ConvertTextToAudio(TextRequest) returns (AudioResponse);
+}
