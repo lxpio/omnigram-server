@@ -14,9 +14,9 @@ import (
 )
 
 var (
-	VERSION    = "UNKNOWN"
-	BuildStamp = "UNKNOWN"
-	GitHash    = "UNKNOWN"
+	VERSION    = ""
+	BUILDSTAMP = ""
+	GITHASH    = ""
 
 	confFile    string
 	showVersion bool
@@ -34,9 +34,9 @@ func main() {
 	flag.Parse()
 
 	if showVersion {
-		println(`llmchain version: `, VERSION)
-		println(`git commit hash: `, GitHash)
-		println(`utc build time: `, BuildStamp)
+		println(`omni-server version: `, VERSION)
+		println(`git commit hash: `, GITHASH)
+		println(`utc build time: `, BUILDSTAMP)
 		os.Exit(0)
 	}
 
