@@ -11,7 +11,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/cxbooks/epub"
+	"github.com/nexptr/epub"
 	"github.com/nexptr/omnigram-server/log"
 	"github.com/nexptr/omnigram-server/store"
 	"github.com/nexptr/omnigram-server/utils"

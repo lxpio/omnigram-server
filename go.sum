@@ -14,8 +14,6 @@ github.com/bytedance/sonic v1.8.0/go.mod h1:i736AoUSYt75HyZLoJW9ERYxcy6eaN6h4BZX
 github.com/chenzhuoyu/base64x v0.0.0-20211019084208-fb5309c8db06/go.mod h1:DH46F32mSOjUmXrMHnKwZdA8wcEefY7UVqBKYGjpdQY=
 github.com/chenzhuoyu/base64x v0.0.0-20221115062448-fe3a3abad311 h1:qSGYFH7+jGhDF8vLC+iwCD4WpbV1EBDSzWkJODFLams=
 github.com/chenzhuoyu/base64x v0.0.0-20221115062448-fe3a3abad311/go.mod h1:b583jCggY9gE99b6G5LEC39OIiVsWj+R97kbl5odCEk=
-github.com/cxbooks/epub v0.0.0-20220913085452-dd45a34685a3 h1:7O6e+Sidf6LgbnK1aGEQfK9cXarwzQeNe9+4kIDRA4k=
-github.com/cxbooks/epub v0.0.0-20220913085452-dd45a34685a3/go.mod h1:vFw5O2R97q1izFRh6rVTd85xWIyt/ZxnMR01CtVirmk=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
@@ -75,6 +73,8 @@ github.com/modern-go/reflect2 v1.0.2 h1:xBagoLtFs94CBntxluKeaWgTMpvLxC4ur3nMaC9G
 github.com/modern-go/reflect2 v1.0.2/go.mod h1:yWuevngMOJpCy52FWWMvUC8ws7m/LJsjYzDa0/r8luk=
 github.com/natefinch/lumberjack v2.0.0+incompatible h1:4QJd3OLAMgj7ph+yZTuX13Ld4UpgHp07nNdFX7mqFfM=
 github.com/natefinch/lumberjack v2.0.0+incompatible/go.mod h1:Wi9p2TTF5DG5oU+6YfsmYQpsTIOm0B1VNzQg9Mw6nPk=
+github.com/nexptr/epub v0.0.0-20231119094044-2967c379aa0e h1:kPIP8qsLZtwtJ/lxlW7fE8EipKvLnMA/ZSWKd8G2R+M=
+github.com/nexptr/epub v0.0.0-20231119094044-2967c379aa0e/go.mod h1:dKopRHRfip3xvC0oaF+V10wOzmxbG+Gt0ls4rX/SLc8=
 github.com/nutsdb/nutsdb v0.14.0 h1:W/ghJ/7hpQt88sgkqXViL3JgzGKWfnLqztj0xeGUg5o=
 github.com/nutsdb/nutsdb v0.14.0/go.mod h1:6inOji9rFBporXeHDjJny4g50RpQbkjSK5jI1hht0j8=
 github.com/pelletier/go-toml/v2 v2.0.6 h1:nrzqCb7j9cDFj2coyLNLaZuJTLjWjlaz6nvTvIwycIU=

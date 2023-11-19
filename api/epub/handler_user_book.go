@@ -1,6 +1,8 @@
 package epub
 
 import (
+	"strconv"
+
 	"github.com/gin-gonic/gin"
 	"github.com/nexptr/omnigram-server/api/epub/schema"
 	"github.com/nexptr/omnigram-server/log"
@@ -86,5 +88,29 @@ func PersonalBooksHandle(c *gin.Context) {
 		"readings": readings,
 		"likes":    likes,
 	}))
+
+}
+
+// 获取个人阅读进度
+func getReadBookHandle(c *gin.Context) {
+	id, err := strconv.Atoi(c.Param(`book_id`))
+	if err != nil || id < 1 {
+		log.E(`图书ID为空`)
+		c.JSON(200, utils.ErrReqArgs)
+		return
+	}
+
+	userID := c.GetInt64(middleware.XUserIDTag)
+
+	p := schema.ReadProgress{UserID: userID, BookID: int64(id)}
+	err = p.First(orm)
+
+	if err != nil {
+		log.E(`创建阅读进度失败：`, err)
+		c.JSON(200, utils.ErrInnerServer)
+		return
+	}
+
+	c.JSON(200, utils.SUCCESS.WithData(p))
 
 }

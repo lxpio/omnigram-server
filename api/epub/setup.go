@@ -53,7 +53,7 @@ func Setup(router *gin.Engine) {
 
 	book.GET(`/download/books/:book_id`, bookDownloadHandle)
 
-	book.POST(`/read/books/:book_id`, startReadBookHandle)
+	book.GET(`/read/books/:book_id`, getReadBookHandle)
 	book.PUT(`/read/books/:book_id`, updateReadBookHandle)
 
 	router.GET("/books/:book_id", middleware.Get(middleware.OathMD), BookDetail)
@@ -151,7 +151,7 @@ func InitData(cf *conf.Config) error {
 	return db.Transaction(func(tx *gorm.DB) error {
 
 		//auotoMigrate
-		if err := tx.AutoMigrate(&schema.Book{}, &schema.FavBook{}, &schema.ReadProcess{}); err != nil {
+		if err := tx.AutoMigrate(&schema.Book{}, &schema.FavBook{}, &schema.ReadProgress{}); err != nil {
 
 			return err
 		}

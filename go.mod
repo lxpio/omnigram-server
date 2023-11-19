@@ -3,10 +3,10 @@ module github.com/nexptr/omnigram-server
 go 1.20
 
 require (
-	github.com/cxbooks/epub v0.0.0-20220913085452-dd45a34685a3
 	github.com/gin-gonic/gin v1.9.0
 	github.com/hashicorp/golang-lru/v2 v2.0.6
 	github.com/natefinch/lumberjack v2.0.0+incompatible
+	github.com/nexptr/epub v0.0.0-20231119094044-2967c379aa0e
 	github.com/nutsdb/nutsdb v0.14.0
 	go.uber.org/zap v1.24.0
 	golang.org/x/crypto v0.12.0

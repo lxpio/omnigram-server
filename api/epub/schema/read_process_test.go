@@ -24,7 +24,7 @@ func TestReadProcess_Upsert(t *testing.T) {
 
 	// db.AutoMigrate(schema.ReadProcess{})
 
-	p := schema.ReadProcess{UserID: 1, BookID: 1, Process: 0.7}
+	p := schema.ReadProgress{UserID: 1, BookID: 1, Progress: 0.7}
 
 	err := p.Upsert(db)
 

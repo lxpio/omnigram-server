@@ -238,37 +238,6 @@ func GetBookStats(c *gin.Context) {
 
 }
 
-// 创建阅读进度
-func startReadBookHandle(c *gin.Context) {
-	id, err := strconv.Atoi(c.Param(`book_id`))
-	if err != nil || id < 1 {
-		log.E(`图书ID为空`)
-		c.JSON(200, utils.ErrReqArgs)
-		return
-	}
-
-	book, err := schema.FirstBookById(orm, id)
-
-	if err != nil {
-		log.E(`获取图书失败：`, err)
-		c.JSON(200, utils.ErrNoFound)
-		return
-	}
-
-	userID := c.GetInt64(middleware.XUserIDTag)
-
-	_, err = book.CreateReadProcess(orm, userID)
-
-	if err != nil {
-		log.E(`创建阅读进度失败：`, err)
-		c.JSON(200, utils.ErrInnerServer)
-		return
-	}
-
-	c.JSON(200, utils.SUCCESS)
-
-}
-
 func updateReadBookHandle(c *gin.Context) {
 
 	id, err := strconv.Atoi(c.Param(`book_id`))
@@ -278,7 +247,7 @@ func updateReadBookHandle(c *gin.Context) {
 		return
 	}
 
-	req := &schema.ReadProcess{BookID: int64(id)}
+	req := &schema.ReadProgress{BookID: int64(id)}
 
 	if err := c.ShouldBind(req); err != nil {
 		log.I(`用户登录参数异常`, err)
