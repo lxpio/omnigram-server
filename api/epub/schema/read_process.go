@@ -21,9 +21,9 @@ type ReadProgress struct {
 	ExptEndDate int64 `json:"expt_end_date" gorm:"comment:预计完成日期"`
 	EndDate     int64 `json:"end_date" gorm:"comment:阅读结束日期"`
 
-	// ChapterID int64 `json:"chapter_id" gorm:"comment:当前章节"`
+	ProgressIndex int64 `json:"progress_index" gorm:"comment:章节定位"`
 	//章节定位
-	ChapterPos string `json:"chapter_pos" gorm:"comment:章节定位"`
+	// ChapterPos string `json:"chapter_pos" gorm:"comment:章节定位"`
 }
 
 func (p *ReadProgress) BeforeCreate(db *gorm.DB) error {
@@ -45,13 +45,13 @@ func (p *ReadProgress) First(db *gorm.DB) error {
 func (b *Book) CreateReadProcess(db *gorm.DB, userID int64) (*ReadProgress, error) {
 
 	proc := &ReadProgress{
-		BookID:      b.ID,
-		UserID:      userID,
-		Progress:    0,
-		StartDate:   time.Now().Unix(),
-		ExptEndDate: time.Now().AddDate(0, 0, 15).Unix(), //根据数据推测完成时间，
-		EndDate:     0,
-		ChapterPos:  "",
+		BookID:        b.ID,
+		UserID:        userID,
+		Progress:      0,
+		StartDate:     time.Now().Unix(),
+		ExptEndDate:   time.Now().AddDate(0, 0, 15).Unix(), //根据数据推测完成时间，
+		EndDate:       0,
+		ProgressIndex: 0,
 	}
 
 	err := db.Create(proc).Error
@@ -61,7 +61,7 @@ func (b *Book) CreateReadProcess(db *gorm.DB, userID int64) (*ReadProgress, erro
 
 func (p *ReadProgress) Update(db *gorm.DB) error {
 
-	return db.Table(`read_progresses`).Where(`user_id = ? AND book_id = ?`, p.UserID, p.BookID).Select("progress", "update_at", "chapter_pos").Updates(p).Error
+	return db.Table(`read_progresses`).Where(`user_id = ? AND book_id = ?`, p.UserID, p.BookID).Select("progress", "update_at", "progress_index").Updates(p).Error
 
 }
 
@@ -69,7 +69,7 @@ func (p *ReadProgress) Upsert(db *gorm.DB) error {
 
 	return db.Clauses(clause.OnConflict{
 		Columns:   []clause.Column{{Name: "book_id"}, {Name: "user_id"}},
-		DoUpdates: clause.AssignmentColumns([]string{"progress", "updated_at", "chapter_pos"}),
+		DoUpdates: clause.AssignmentColumns([]string{"progress", "updated_at", "progress_index"}),
 	}).Create(p).Error
 
 }

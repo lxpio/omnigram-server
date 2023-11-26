@@ -89,8 +89,8 @@ func GetBookStats(store *gorm.DB) (BookStats, error) {
 
 type ProcessBook struct {
 	Book
-	Process    float32 `json:"process"`
-	ChapterPos string  `json:"chapter_pos,omitempty"`
+	Process      float32 `json:"process"`
+	ProcessIndex string  `json:"progress_index,omitempty"`
 }
 
 // ReadingBooks 正在阅读的书籍列表
@@ -106,7 +106,7 @@ func ReadingBooks(store *gorm.DB, userID int64, offset, limit int) ([]ProcessBoo
 	}
 
 	sql := `
-		SELECT B.*,R.process,R.chapter_pos FROM books as B INNER JOIN 
+		SELECT B.*,R.process,R.progress_index FROM books as B INNER JOIN 
 		( SELECT book_id,process FROM read_processes WHERE user_id = ? ORDER BY updated_at desc LIMIT ? OFFSET ? )
 		 AS R
 		ON R.book_id = B.id;
