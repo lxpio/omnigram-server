@@ -13,7 +13,6 @@ After=network.target network-online.target
 [Service]
 Type=simple
 WorkingDirectory=/opt/m4t_server
-ExecStart=/opt/echo -addr 0.0.0.0:9001
 ExecStart=${MY_PYTHON_PATH}/python ./serve.py --host 0.0.0.0 --port 50051 --model-path ${MY_MODEL_PATH}
 Restart=on-failure
 StandardOutput=null

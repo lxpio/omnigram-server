@@ -7,6 +7,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/nexptr/omnigram-server/api/chat"
 	"github.com/nexptr/omnigram-server/api/epub"
+	"github.com/nexptr/omnigram-server/api/m4t"
 	"github.com/nexptr/omnigram-server/api/sys"
 	"github.com/nexptr/omnigram-server/api/user"
 	"github.com/nexptr/omnigram-server/conf"
@@ -18,6 +19,7 @@ func Initialize(ctx context.Context, cf *conf.Config) {
 	epub.Initialize(ctx, cf)
 	chat.Initialize(ctx, cf)
 	sys.Initialize(ctx, cf)
+	m4t.Initialize(ctx, cf)
 }
 
 func Setup(router *gin.Engine) {
@@ -26,6 +28,7 @@ func Setup(router *gin.Engine) {
 	chat.Setup(router)
 	epub.Setup(router)
 	sys.Setup(router)
+	m4t.Setup(router)
 }
 
 func Close() {
@@ -33,6 +36,7 @@ func Close() {
 	chat.Close()
 	epub.Close()
 	sys.Close()
+	m4t.Close()
 }
 
 func InitData(cf *conf.Config) error {

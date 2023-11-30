@@ -31,6 +31,11 @@ m4t_server/pb/m4t_pb2_grpc.py m4t_server/pb/m4t_pb2.pyi m4t_server/pb/m4t_pb2.py
 	pip install grpcio-tools
 	@$(MAKE) -C m4t_server/ protos
 
+protos: api/m4t/m4t_grpc.pb.go api/m4t/m4t.pb.go 
+	@$(MAKE) -C api/m4t/ protos
+	@$(MAKE) -C m4t_server/ protos
+
+
 omnigram-server: api/m4t/m4t_grpc.pb.go api/m4t/m4t.pb.go
 	@echo "create omnigram-server-${VERSION} "
 	@#debian上直接使用mkdir不会创建，需要额外调用 bash-c 

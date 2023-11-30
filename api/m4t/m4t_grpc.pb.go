@@ -20,6 +20,10 @@ const _ = grpc.SupportPackageIsVersion7
 
 const (
 	TextToAudio_ConvertTextToAudio_FullMethodName = "/m4t.TextToAudio/ConvertTextToAudio"
+	TextToAudio_TTSStream_FullMethodName          = "/m4t.TextToAudio/TTSStream"
+	TextToAudio_AllSpeaker_FullMethodName         = "/m4t.TextToAudio/AllSpeaker"
+	TextToAudio_AddSpeaker_FullMethodName         = "/m4t.TextToAudio/AddSpeaker"
+	TextToAudio_DelSpeaker_FullMethodName         = "/m4t.TextToAudio/DelSpeaker"
 )
 
 // TextToAudioClient is the client API for TextToAudio service.
@@ -27,6 +31,10 @@ const (
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type TextToAudioClient interface {
 	ConvertTextToAudio(ctx context.Context, in *TextRequest, opts ...grpc.CallOption) (*AudioResponse, error)
+	TTSStream(ctx context.Context, in *TextRequest, opts ...grpc.CallOption) (TextToAudio_TTSStreamClient, error)
+	AllSpeaker(ctx context.Context, in *EmptyRequsest, opts ...grpc.CallOption) (*SpeakerList, error)
+	AddSpeaker(ctx context.Context, in *UploadRequsest, opts ...grpc.CallOption) (*Speaker, error)
+	DelSpeaker(ctx context.Context, in *DelRequsest, opts ...grpc.CallOption) (*Speaker, error)
 }
 
 type textToAudioClient struct {
@@ -46,11 +54,74 @@ func (c *textToAudioClient) ConvertTextToAudio(ctx context.Context, in *TextRequ
 	return out, nil
 }
 
+func (c *textToAudioClient) TTSStream(ctx context.Context, in *TextRequest, opts ...grpc.CallOption) (TextToAudio_TTSStreamClient, error) {
+	stream, err := c.cc.NewStream(ctx, &TextToAudio_ServiceDesc.Streams[0], TextToAudio_TTSStream_FullMethodName, opts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &textToAudioTTSStreamClient{stream}
+	if err := x.ClientStream.SendMsg(in); err != nil {
+		return nil, err
+	}
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
+	return x, nil
+}
+
+type TextToAudio_TTSStreamClient interface {
+	Recv() (*AudioResponse, error)
+	grpc.ClientStream
+}
+
+type textToAudioTTSStreamClient struct {
+	grpc.ClientStream
+}
+
+func (x *textToAudioTTSStreamClient) Recv() (*AudioResponse, error) {
+	m := new(AudioResponse)
+	if err := x.ClientStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
+func (c *textToAudioClient) AllSpeaker(ctx context.Context, in *EmptyRequsest, opts ...grpc.CallOption) (*SpeakerList, error) {
+	out := new(SpeakerList)
+	err := c.cc.Invoke(ctx, TextToAudio_AllSpeaker_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *textToAudioClient) AddSpeaker(ctx context.Context, in *UploadRequsest, opts ...grpc.CallOption) (*Speaker, error) {
+	out := new(Speaker)
+	err := c.cc.Invoke(ctx, TextToAudio_AddSpeaker_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *textToAudioClient) DelSpeaker(ctx context.Context, in *DelRequsest, opts ...grpc.CallOption) (*Speaker, error) {
+	out := new(Speaker)
+	err := c.cc.Invoke(ctx, TextToAudio_DelSpeaker_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // TextToAudioServer is the server API for TextToAudio service.
 // All implementations must embed UnimplementedTextToAudioServer
 // for forward compatibility
 type TextToAudioServer interface {
 	ConvertTextToAudio(context.Context, *TextRequest) (*AudioResponse, error)
+	TTSStream(*TextRequest, TextToAudio_TTSStreamServer) error
+	AllSpeaker(context.Context, *EmptyRequsest) (*SpeakerList, error)
+	AddSpeaker(context.Context, *UploadRequsest) (*Speaker, error)
+	DelSpeaker(context.Context, *DelRequsest) (*Speaker, error)
 	mustEmbedUnimplementedTextToAudioServer()
 }
 
@@ -60,6 +131,18 @@ type UnimplementedTextToAudioServer struct {
 
 func (UnimplementedTextToAudioServer) ConvertTextToAudio(context.Context, *TextRequest) (*AudioResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ConvertTextToAudio not implemented")
+}
+func (UnimplementedTextToAudioServer) TTSStream(*TextRequest, TextToAudio_TTSStreamServer) error {
+	return status.Errorf(codes.Unimplemented, "method TTSStream not implemented")
+}
+func (UnimplementedTextToAudioServer) AllSpeaker(context.Context, *EmptyRequsest) (*SpeakerList, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method AllSpeaker not implemented")
+}
+func (UnimplementedTextToAudioServer) AddSpeaker(context.Context, *UploadRequsest) (*Speaker, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method AddSpeaker not implemented")
+}
+func (UnimplementedTextToAudioServer) DelSpeaker(context.Context, *DelRequsest) (*Speaker, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DelSpeaker not implemented")
 }
 func (UnimplementedTextToAudioServer) mustEmbedUnimplementedTextToAudioServer() {}
 
@@ -92,6 +175,81 @@ func _TextToAudio_ConvertTextToAudio_Handler(srv interface{}, ctx context.Contex
 	return interceptor(ctx, in, info, handler)
 }
 
+func _TextToAudio_TTSStream_Handler(srv interface{}, stream grpc.ServerStream) error {
+	m := new(TextRequest)
+	if err := stream.RecvMsg(m); err != nil {
+		return err
+	}
+	return srv.(TextToAudioServer).TTSStream(m, &textToAudioTTSStreamServer{stream})
+}
+
+type TextToAudio_TTSStreamServer interface {
+	Send(*AudioResponse) error
+	grpc.ServerStream
+}
+
+type textToAudioTTSStreamServer struct {
+	grpc.ServerStream
+}
+
+func (x *textToAudioTTSStreamServer) Send(m *AudioResponse) error {
+	return x.ServerStream.SendMsg(m)
+}
+
+func _TextToAudio_AllSpeaker_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(EmptyRequsest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(TextToAudioServer).AllSpeaker(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: TextToAudio_AllSpeaker_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(TextToAudioServer).AllSpeaker(ctx, req.(*EmptyRequsest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _TextToAudio_AddSpeaker_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UploadRequsest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(TextToAudioServer).AddSpeaker(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: TextToAudio_AddSpeaker_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(TextToAudioServer).AddSpeaker(ctx, req.(*UploadRequsest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _TextToAudio_DelSpeaker_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DelRequsest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(TextToAudioServer).DelSpeaker(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: TextToAudio_DelSpeaker_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(TextToAudioServer).DelSpeaker(ctx, req.(*DelRequsest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // TextToAudio_ServiceDesc is the grpc.ServiceDesc for TextToAudio service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -103,7 +261,25 @@ var TextToAudio_ServiceDesc = grpc.ServiceDesc{
 			MethodName: "ConvertTextToAudio",
 			Handler:    _TextToAudio_ConvertTextToAudio_Handler,
 		},
+		{
+			MethodName: "AllSpeaker",
+			Handler:    _TextToAudio_AllSpeaker_Handler,
+		},
+		{
+			MethodName: "AddSpeaker",
+			Handler:    _TextToAudio_AddSpeaker_Handler,
+		},
+		{
+			MethodName: "DelSpeaker",
+			Handler:    _TextToAudio_DelSpeaker_Handler,
+		},
 	},
-	Streams:  []grpc.StreamDesc{},
+	Streams: []grpc.StreamDesc{
+		{
+			StreamName:    "TTSStream",
+			Handler:       _TextToAudio_TTSStream_Handler,
+			ServerStreams: true,
+		},
+	},
 	Metadata: "m4t.proto",
 }

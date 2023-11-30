@@ -24,6 +24,8 @@ type Config struct {
 
 	MetaDataPath string `yaml:"metadata_path" json:"metadata_path"`
 
+	M4tOptions M4tOptions `yaml:"m4t_options" json:"m4t_options"`
+
 	DBOption *store.Opt `yaml:"db_options" json:"db_options"`
 
 	ModelOptions []ModelOptions `yaml:"model_options" json:"model_options"`
@@ -55,6 +57,10 @@ func InitConfig(path string) (*Config, error) {
 	}
 	cf.DBOption.LogLevel = cf.LogLevel
 
+	if cf.M4tOptions.RemoteAddr == `` {
+		cf.M4tOptions.RemoteAddr = `localhost:50051`
+	}
+
 	return cf, err
 }
 
@@ -72,4 +78,8 @@ type EpubOptions struct {
 	DataPath           string `json:"data_path" yaml:"data_path"`
 	SaveCoverBesideSrc bool   `json:"save_cover_beside_src" yaml:"save_cover_beside_src"`
 	MaxEpubSize        int64  `json:"max_epub_size" yaml:"max_epub_size"`
+}
+
+type M4tOptions struct {
+	RemoteAddr string `json:"remote_addr" yaml:"remote_addr"`
 }

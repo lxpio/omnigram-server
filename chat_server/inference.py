@@ -196,7 +196,6 @@ def generate_stream(
             else:
                 tmp_output_ids = output_ids[input_echo_len:]
                 rfind_start = 0
-            # change by liuyou for record last output pos.
             my_pos = len(output)
             
             output = tokenizer.decode(
@@ -237,7 +236,6 @@ def generate_stream(
                                 break
                 else:
                     raise ValueError("Invalid stop field type.")
-            # add by liuyou. cut last same data 
             text = output[my_pos:]
             # prevent yielding partial stop sequence
             if not partially_stopped and text:

@@ -28,6 +28,9 @@ epub_options:
   max_epub_size: 1000000
 
 
+m4t_options:
+  remote_addr: 'localhost:50051'
+
 model_options:
 - name: ggml-llama-7b
   parameters:

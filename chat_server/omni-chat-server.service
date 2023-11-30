@@ -4,8 +4,8 @@ After=network.target
 
 [Service]
 Type=simple
-WorkingDirectory=/home/liuyou/HHD1/omnigram-server/chat/chat_server
-ExecStart=/home/liuyou/anaconda3/envs/vicuna/bin/python ./model_worker.py --host 0.0.0.0 --load-8bit --no-register --model-path /home/liuyou/HHD1/vicuna-13b-v1.5-16k/ --model-names vicuna-13b-v1.5-16k
+WorkingDirectory=/opt/HHD1/omnigram-server/chat/chat_server
+ExecStart=/opt/anaconda3/envs/vicuna/bin/python ./model_worker.py --host 0.0.0.0 --load-8bit --no-register --model-path /opt/HHD1/vicuna-13b-v1.5-16k/ --model-names vicuna-13b-v1.5-16k
 
 [Install]
 WantedBy=default.target
