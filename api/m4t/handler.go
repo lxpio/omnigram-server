@@ -12,11 +12,13 @@ import (
 	"github.com/nexptr/omnigram-server/log"
 	"github.com/nexptr/omnigram-server/utils"
 	grpc "google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 )
 
 func startfetchTask(ctx context.Context, req *TextRequest, errChan chan<- error) (<-chan *AudioResponse, error) {
 	//TODO get remote addr from config file
-	conn, err := grpc.Dial(remoteServer, grpc.WithInsecure())
+	conn, err := grpc.Dial(remoteServer.addr(), grpc.WithTransportCredentials(insecure.NewCredentials()))
+
 	if err != nil {
 
 		return nil, err

@@ -14,6 +14,8 @@ import (
 	"github.com/nutsdb/nutsdb"
 )
 
+const scanStatsKey = `last_scan_status_v2`
+
 // Scanner  文件扫描器
 type Scanner struct {
 	Running bool     `json:"running"`
@@ -57,15 +59,20 @@ func NewScan(root, meta string) (*Scanner, error) {
 
 func (m *Scanner) startSingleThread(manager *ScannerManager, books <-chan *schema.Book) {
 
-	errChan := make(chan string)
+	errs := []string{}
+	statusChan := make(chan ScanStatus) // 新增一个状态通道
 
 	m.wg.Add(1)
 	go func() {
 
+		ticker := time.NewTicker(1 * time.Second) // 定义一个1秒的定时器
+
 		defer func() {
 
 			m.wg.Done()
-			close(errChan)
+			// close(errChan)
+			close(statusChan)
+			ticker.Stop()
 			log.I(`退出扫描程序`)
 		}()
 
@@ -83,16 +90,15 @@ func (m *Scanner) startSingleThread(manager *ScannerManager, books <-chan *schem
 					log.I(`书籍为空，退出解析文件。`)
 					return
 				}
-
+				m.Count++
 				log.D(`开始解析: `, book.Path, ` 到数据库`)
 
 				if err := book.GetMetadataFromFile(); err != nil {
 					log.E(`获取图书基本元素失败 `, err.Error())
-					errChan <- `文件：` + book.Path + ` 解析失败：` + err.Error()
+					errs = append(errs, `文件：`+book.Path+` 解析失败：`+err.Error())
 				} else {
 					if err := book.Save(manager.ctx, manager.orm, manager.kv); err != nil {
-						errChan <- err.Error()
-
+						errs = append(errs, err.Error())
 					} else {
 						m.cacheEpubFilePath(book.Path)
 					}
@@ -100,27 +106,30 @@ func (m *Scanner) startSingleThread(manager *ScannerManager, books <-chan *schem
 
 				}
 
+			case <-ticker.C: // 定时器触发时发送当前状态
+				status := ScanStatus{
+					Running:   true,
+					ScanCount: m.Count,
+					EpubCount: m.Count, // 当前只是扫描了 epub 文件
+					Errs:      errs,
+				}
+				statusChan <- status
+				errs = []string{}
 			}
 		}
 
 	}()
 
 	m.wg.Add(1)
+	// 新增一个 goroutine，用于监听状态通道，并更新状态
 	go func() {
 		defer m.wg.Done()
-
-		for err := range errChan {
-			m.Errs = append(m.Errs, err)
+		for status := range statusChan {
+			manager.updateStatus(status)
 		}
-
-		//更新扫描状态
-		manager.updateStatus(ScanStatus{
-			Running:   false,
-			BookCount: m.Count,
-			Errs:      m.Errs,
-		})
-
 		//关闭扫描器
+		manager.dumpStats(m.cached)
+
 		m.cached.Close()
 		m.cached = nil
 	}()
@@ -131,94 +140,7 @@ func (m *Scanner) Start(manager *ScannerManager, maxThread int, refresh bool) {
 
 	books := m.Walk(manager.ctx, refresh)
 
-	if maxThread < 2 {
-		m.startSingleThread(manager, books)
-		return
-	}
-
-	errChan := make(chan string)
-
-	m.wg.Add(1)
-	go func() {
-
-		wg := new(sync.WaitGroup)
-
-		defer func() {
-
-			m.wg.Done()
-
-			wg.Wait()
-
-			close(errChan)
-			log.I(`退出扫描程序`)
-		}()
-
-		concurrent := make(chan struct{}, maxThread)
-
-		for {
-
-			select {
-
-			case <-manager.ctx.Done():
-				log.W(`接收到退出命令，退出扫描`)
-				return
-			case book, ok := <-books:
-
-				if !ok {
-					//books is closed
-					log.I(`书籍为空，退出解析文件。`)
-
-					return
-				}
-
-				log.D(`开始解析: `, book.Path, ` 到数据库`)
-
-				wg.Add(1)
-				concurrent <- struct{}{}
-
-				go func(b *schema.Book) {
-
-					defer wg.Done()
-
-					if err := b.GetMetadataFromFile(); err != nil {
-						log.E(`获取图书基本元素失败 `, err.Error())
-						errChan <- `文件：` + b.Path + ` 解析失败：` + err.Error()
-					} else {
-						if err := b.Save(manager.ctx, manager.orm, manager.kv); err != nil {
-							errChan <- err.Error()
-						} else {
-							m.cacheEpubFilePath(book.Path)
-						}
-					}
-
-					<-concurrent
-
-				}(book)
-
-			}
-		}
-
-	}()
-
-	m.wg.Add(1)
-	go func() {
-		defer m.wg.Done()
-
-		for err := range errChan {
-			m.Errs = append(m.Errs, err)
-		}
-
-		status := ScanStatus{
-			Running:   false,
-			BookCount: m.Count,
-			Errs:      m.Errs,
-		}
-		//更新扫描状态
-		manager.updateStatus(status)
-		m.dumpStats(status)
-		m.cached.Close()
-		m.cached = nil
-	}()
+	m.startSingleThread(manager, books)
 
 }
 
@@ -259,7 +181,7 @@ func (m *Scanner) Walk(ctx context.Context, refresh bool) <-chan *schema.Book {
 				}
 
 				books <- book
-				m.Count++
+
 			}
 			return nil
 		})
@@ -303,7 +225,7 @@ func (m *Scanner) dumpStats(status ScanStatus) error {
 
 	return m.cached.Update(
 		func(tx *nutsdb.Tx) error {
-			if err := tx.Put(`sys`, []byte("last_scan_status"), bytes, 0); err != nil {
+			if err := tx.Put(`sys`, []byte(scanStatsKey), bytes, 0); err != nil {
 				return err
 			}
 			return nil

@@ -84,7 +84,7 @@ func PersonalBooksHandle(c *gin.Context) {
 		return
 	}
 
-	c.JSON(200, utils.SUCCESS.WithData(map[string][]schema.ProcessBook{
+	c.JSON(200, utils.SUCCESS.WithData(map[string][]schema.ProgressBook{
 		"readings": readings,
 		"likes":    likes,
 	}))

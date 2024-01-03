@@ -7,7 +7,7 @@ BUILD_DATE=$(shell date -u '+%Y-%m-%d_%I_%M_%S%p')
 BUILD_HASH=$(shell git rev-parse HEAD)
 LDFLAGS="-X main.BUILDSTAMP=${BUILD_DATE} -X main.GITHASH=${BUILD_HASH} -X github.com/nexptr/omnigram-server/conf.Version=${VERSION} -s -w"
 # SHELL := /bin/bash
-VERSION=v0.0.3
+VERSION=v0.0.4
 DESTDIR=${PROJECT_PATH}/build/omnigram-server-${VERSION}
 
 
@@ -52,8 +52,11 @@ docs:
 	@apidoc -i ./  -f ".*\\.go$" -o apidoc
 
 
-docker:
-	@docker build --build-arg BUILD_DATE=${BUILD_DATE} --build-arg BUILD_HASH=${BUILD_HASH} --build-arg BUILD_HASH=${VERSION} -t omnigram-server:${VERSION} ./
+hub_docker:
+	@docker buildx build --build-arg BUILD_DATE=${BUILD_DATE} --build-arg BUILD_HASH=${BUILD_HASH} --build-arg BUILD_HASH=${VERSION} -t lxpio/omnigram-server:${VERSION} ./
+	@docker tag lxpio/omnigram-server:${VERSION} lxpio/omnigram-server:latest
+	@docker push lxpio/omnigram-server:latest
+	@docker push lxpio/omnigram-server:${VERSION}
 
 docker_cn:
 	@docker buildx build --build-arg BUILD_COUNTRY="CN" --build-arg BUILD_DATE=${BUILD_DATE} --build-arg BUILD_HASH=${BUILD_HASH} --build-arg BUILD_VERSION=${VERSION} -t omnigram-server:${VERSION} ./

@@ -10,7 +10,9 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
-var Version = ""
+var (
+	Version = ""
+)
 
 // Config 定义 配置结构图
 type Config struct {
@@ -31,6 +33,8 @@ type Config struct {
 	ModelOptions []ModelOptions `yaml:"model_options" json:"model_options"`
 
 	EpubOptions EpubOptions `yaml:"epub_options" json:"epub_options"`
+
+	filePath string `yaml:"-" json:"-"`
 }
 
 func InitConfig(path string) (*Config, error) {
@@ -40,7 +44,7 @@ func InitConfig(path string) (*Config, error) {
 		return nil, fmt.Errorf("cannot read config file: %w", err)
 	}
 
-	cf := defaultConfig()
+	cf := defaultConfig(path)
 
 	if err := yaml.Unmarshal(f, cf); err != nil {
 		return nil, fmt.Errorf("cannot unmarshal config file: %w", err)
@@ -64,14 +68,33 @@ func InitConfig(path string) (*Config, error) {
 	return cf, err
 }
 
-func defaultConfig() *Config {
+func defaultConfig(path string) *Config {
 	cf := &Config{
 		APIAddr:      "0.0.0.0:8080",
 		LogLevel:     zapcore.InfoLevel,
 		LogDir:       "./logs",
 		MetaDataPath: "./metadata",
+		filePath:     path,
 	}
 	return cf
+}
+
+func (c *Config) Save() error {
+
+	// Convert struct to YAML
+	yamlData, err := yaml.Marshal(&c)
+	if err != nil {
+		return fmt.Errorf("error marshalling config: %v ", err)
+
+	}
+
+	// Save YAML data to a file
+	err = os.WriteFile(c.filePath, yamlData, 0644)
+	if err != nil {
+		return fmt.Errorf("error save config file: %v", err)
+
+	}
+	return nil
 }
 
 type EpubOptions struct {

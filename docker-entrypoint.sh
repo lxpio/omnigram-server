@@ -30,9 +30,8 @@ fi
 if [ ! -e /$CONTAINER_FIRST_STARTUP ] && ! _want_init "$@"; then
     touch /$CONTAINER_FIRST_STARTUP
     # place your script that you only want to run on first startup.
-    exec omni-server -conf ${CONFIG_FILE} -init
+    omni-server -conf ${CONFIG_FILE} -init
 fi
-
 
 # if command app only, add use default args
 if [ "$1" = 'omni-server' ] ; then

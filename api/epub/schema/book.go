@@ -87,18 +87,19 @@ func GetBookStats(store *gorm.DB) (BookStats, error) {
 
 }
 
-type ProcessBook struct {
+type ProgressBook struct {
 	Book
-	Process      float32 `json:"process"`
-	ProcessIndex string  `json:"progress_index,omitempty"`
+	Progress      float32 `json:"progress"`
+	ProgressIndex int     `json:"progress_index,omitempty"`
+	ParaPosition  int     `json:"para_position,omitempty"`
 }
 
 // ReadingBooks 正在阅读的书籍列表
-func ReadingBooks(store *gorm.DB, userID int64, offset, limit int) ([]ProcessBook, error) {
+func ReadingBooks(store *gorm.DB, userID int64, offset, limit int) ([]ProgressBook, error) {
 
 	// books := []Book{}
 
-	processBook := []ProcessBook{}
+	progressBook := []ProgressBook{}
 
 	if limit == 0 {
 		log.I(`限制为空，调整为默认值10`)
@@ -106,18 +107,25 @@ func ReadingBooks(store *gorm.DB, userID int64, offset, limit int) ([]ProcessBoo
 	}
 
 	sql := `
-		SELECT B.*,R.process,R.progress_index FROM books as B INNER JOIN 
-		( SELECT book_id,process FROM read_processes WHERE user_id = ? ORDER BY updated_at desc LIMIT ? OFFSET ? )
+		SELECT B.*,R.progress,R.progress_index,R.para_position FROM books as B INNER JOIN 
+		( SELECT book_id,progress,progress_index,para_position FROM read_progresses as R WHERE user_id = ? ORDER BY updated_at desc LIMIT ? OFFSET ? )
 		 AS R
 		ON R.book_id = B.id;
 		`
-
-	err := store.Raw(sql, userID, limit, offset).Scan(&processBook).Error
+	err := store.Raw(sql, userID, limit, offset).Scan(&progressBook).Error
 
 	// SELECT * FROM table where count_visit = 0 ORDER BY ctime desc LIMIT 1;
-	// err := store.Table(`books`).Where(`id IN ( SELECT book_id FROM read_processes ORDER BY updated_at desc LIMIT ? )`, limit).Find(&books).Error
-	return processBook, err
+	// err := store.Table(`books`).Where(`id IN ( SELECT book_id FROM read_progresses ORDER BY updated_at desc LIMIT ? )`, limit).Find(&books).Error
+	return progressBook, err
 	// return BookResp{len(books), books}, err
+
+}
+
+func CountBook(store *gorm.DB) (int64, error) {
+	var count int64
+	err := store.Table("books").Count(&count).Error
+
+	return count, err
 
 }
 

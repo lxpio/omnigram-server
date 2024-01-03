@@ -23,7 +23,7 @@ db_options:
 
 epub_options:
   #data_path epub files dirctories
-  data_path: '/epub' 
+  data_path: '/docs' 
   save_cover_beside_src: false
   max_epub_size: 1000000
 

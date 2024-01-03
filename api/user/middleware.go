@@ -37,6 +37,8 @@ func OauthMiddleware(c *gin.Context) {
 		if token, err := schema.FirstTokenByAPIKey(orm, apiKey); err == nil {
 
 			if info, err1 := schema.FirstUserByID(orm, token.UserID); err1 == nil {
+				//Credential 信息需要抹掉
+				info.Credential = ``
 				userInfoCache.Add(key, info)
 				c.Set(middleware.XUserIDTag, info.ID)
 				c.Set(middleware.XUserInfoTag, info)

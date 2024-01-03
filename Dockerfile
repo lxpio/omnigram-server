@@ -1,6 +1,8 @@
 # stage 2: build golang backend
-FROM golang:1.21.3-alpine3.18 as gobuilder
+FROM --platform=$BUILDPLATFORM golang:1.21.3-alpine3.18 as gobuilder
 
+ARG TARGETOS
+ARG TARGETARCH
 ARG BUILD_COUNTRY=""
 ARG GIT_VERSION=""
 ARG BUILD_DATE=""
@@ -23,11 +25,11 @@ RUN apk add build-base && \
     chmod +x /omnigram-server/docker-entrypoint.sh && \
     mkdir -p /build/data && mkdir /build/conf && mkdir /build/bin && \
     cp /omnigram-server/conf/conf.yaml /build/conf/conf.yaml && \
-    go build -ldflags "-X main.BUILDSTAMP=${BUILD_DATE} -X main.GITHASH=${BUILD_HASH} -X github.com/nexptr/omnigram-server/conf.Version=${BUILD_VERSION} -s -w" \
+    GOOS=$TARGETOS GOARCH=$TARGETARCH go build -ldflags "-X main.BUILDSTAMP=${BUILD_DATE} -X main.GITHASH=${BUILD_HASH} -X github.com/nexptr/omnigram-server/conf.Version=${BUILD_VERSION} -s -w" \
     -o /build/bin/omni-server github.com/nexptr/omnigram-server/cmd/omni-server
 
 
-FROM alpine:3.18.4
+FROM --platform=$TARGETPLATFORM alpine:3.18.4
 
 LABEL author="exppii" \
     description="omnigram-server"
@@ -39,8 +41,8 @@ COPY --from=gobuilder /omnigram-server/docker-entrypoint.sh ./
 ENV CONFIG_FILE=/conf/conf.yaml
 
 EXPOSE 80
-# scan epub dir
-VOLUME [ "/epub" ]
+# scan docs dir
+VOLUME [ "/docs" ]
 # save default metadata
 VOLUME [ "/metadata" ]
 

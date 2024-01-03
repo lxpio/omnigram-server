@@ -19,7 +19,12 @@ omnigram-server 是使用 Golang 编写的个人内容管理后端服务，提�
 
 ### 快速启动
 
-### docker-compose
+### docker
+
+```bash
+# 这里需要替换${MY_DIR}自己实际包含epub文件目录
+docker run --rm -v ${MY_DIR}:/docs -p 8080:80 lxpio/omnigram-server:latest
+```
 
 TODO
 

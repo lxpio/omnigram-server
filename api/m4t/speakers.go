@@ -5,6 +5,7 @@ import (
 	"sync"
 
 	grpc "google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 )
 
 type Speakers struct {
@@ -97,7 +98,8 @@ func (s *Speakers) Delete(ctx context.Context, id string) error {
 
 func NewClient() (TextToAudioClient, error) {
 
-	conn, err := grpc.Dial(remoteServer, grpc.WithInsecure())
+	conn, err := grpc.Dial(remoteServer.addr(), grpc.WithTransportCredentials(insecure.NewCredentials()))
+
 	if err != nil {
 
 		return nil, err

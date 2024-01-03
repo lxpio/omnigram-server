@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 	"sync"
 
+	"github.com/nexptr/omnigram-server/api/epub/schema"
 	"github.com/nexptr/omnigram-server/conf"
 	"github.com/nexptr/omnigram-server/log"
 	"github.com/nexptr/omnigram-server/store"
@@ -18,9 +19,13 @@ import (
 
 // ScanStatus 扫描状态
 type ScanStatus struct {
+	Total     int64    `json:"total"`
 	Running   bool     `json:"running"`
-	BookCount int      `json:"book_count"`
+	ScanCount int      `json:"scan_count"`
 	Errs      []string `json:"errs"`
+	DiskUsage int      `json:"disk_usage"`
+	EpubCount int      `json:"epub_count"`
+	PDFCount  int      `json:"pdf_count"`
 	// Version   string   `json:"version"`
 }
 
@@ -42,23 +47,18 @@ func NewScannerManager(ctx context.Context, cf *conf.Config, kv store.KV, orm *g
 
 	metapath := filepath.Join(cf.MetaDataPath, utils.ConfigBucket)
 
-	db, err := nutsdb.Open(
-		nutsdb.DefaultOptions,
-		nutsdb.WithDir(metapath),
-	)
+	stats, err := loadLastScanStatus(metapath, orm)
 
 	if err != nil {
 		return nil, err
 	}
-
-	defer db.Close()
 
 	scanner := &ScannerManager{
 		dataPath: cf.EpubOptions.DataPath,
 		metaPath: metapath,
 		kv:       kv,
 		orm:      orm,
-		stats:    loadLastScanStatus(db),
+		stats:    stats,
 		ctx:      ctx,
 	}
 
@@ -77,13 +77,13 @@ func (m *ScannerManager) Status() ScanStatus {
 	m.RLock()
 	defer m.RUnlock()
 
-	s := ScanStatus{
-		Running:   m.stats.Running,
-		BookCount: m.stats.BookCount,
-		Errs:      m.stats.Errs,
-	}
+	// s := ScanStatus{
+	// 	Running:   m.stats.Running,
+	// 	BookCount: m.stats.BookCount,
+	// 	Errs:      m.stats.Errs,
+	// }
 
-	return s
+	return m.stats
 
 }
 
@@ -128,14 +128,40 @@ func (m *ScannerManager) Close() {
 
 }
 
-func loadLastScanStatus(cached *nutsdb.DB) ScanStatus {
+func (m *ScannerManager) dumpStats(cached *nutsdb.DB) error {
+
+	stats := m.Status()
+	bytes, _ := json.Marshal(stats)
+
+	return cached.Update(
+		func(tx *nutsdb.Tx) error {
+			if err := tx.Put(`sys`, []byte(scanStatsKey), bytes, 0); err != nil {
+				return err
+			}
+			return nil
+		})
+
+}
+
+func loadLastScanStatus(metapath string, orm *gorm.DB) (ScanStatus, error) {
 
 	stats := ScanStatus{}
 
-	cached.View(
+	db, err := nutsdb.Open(
+		nutsdb.DefaultOptions,
+		nutsdb.WithDir(metapath),
+	)
+
+	if err != nil {
+		return stats, err
+	}
+
+	defer db.Close()
+
+	db.View(
 		func(tx *nutsdb.Tx) error {
 
-			e, err := tx.Get(`sys`, []byte("last_scan_status"))
+			e, err := tx.Get(`sys`, []byte(scanStatsKey))
 			if err != nil {
 				return err
 			}
@@ -144,5 +170,7 @@ func loadLastScanStatus(cached *nutsdb.DB) ScanStatus {
 
 		})
 
-	return stats
+	stats.Total, err = schema.CountBook(orm)
+
+	return stats, err
 }

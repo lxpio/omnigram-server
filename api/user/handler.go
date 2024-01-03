@@ -35,6 +35,8 @@ func getUserInfoHandle(c *gin.Context) {
 		c.JSON(404, utils.ErrGetUserInfo)
 		return
 	}
+	//Credential 信息需要抹掉
+	user.Credential = ``
 
 	userInfoCache.Add(key, user)
 

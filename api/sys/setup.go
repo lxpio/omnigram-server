@@ -5,6 +5,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/nexptr/omnigram-server/conf"
+	"github.com/nexptr/omnigram-server/middleware"
 )
 
 var gcf *conf.Config
@@ -21,7 +22,13 @@ func Setup(router *gin.Engine) {
 	// 	os.Exit(1)
 	// }
 
-	router.GET("/sys/info", getSysInfoHandle)
+	oauthMD := middleware.Get(middleware.OathMD)
+
+	adminMD := middleware.Get(middleware.AdminMD)
+
+	router.GET("/sys/info", oauthMD, getSysInfoHandle)
+
+	router.PATCH("/sys/info", oauthMD, adminMD, updateSysInfoHandle)
 
 }
 

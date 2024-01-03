@@ -1,4 +1,5 @@
-FROM nvidia/cuda:12.2.2-base-ubuntu22.04
+ARG BASE=nvidia/cuda:12.2.2-base-ubuntu22.04
+FROM ${BASE}
 
 ARG BUILD_COUNTRY=""
 

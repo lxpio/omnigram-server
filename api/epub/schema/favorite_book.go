@@ -14,11 +14,11 @@ type FavBook struct {
 }
 
 // LikedBooks 用户喜欢的书籍列表
-func LikedBooks(store *gorm.DB, userID int64, offset, limit int) ([]ProcessBook, error) {
+func LikedBooks(store *gorm.DB, userID int64, offset, limit int) ([]ProgressBook, error) {
 
 	// books := []Book{}
 
-	processBook := []ProcessBook{}
+	progressBook := []ProgressBook{}
 
 	if limit == 0 {
 		log.I(`限制为空，调整为默认值10`)
@@ -26,16 +26,16 @@ func LikedBooks(store *gorm.DB, userID int64, offset, limit int) ([]ProcessBook,
 	}
 
 	sql := `
-		SELECT B.*,R.process,R.progress_index FROM books as B JOIN fav_books AS F ON B.id = F.book_id 
-		LEFT JOIN read_processes AS R ON R.book_id = B.id 
+		SELECT B.*,R.progress,R.progress_index,R.para_position FROM books as B JOIN fav_books AS F ON B.id = F.book_id 
+		LEFT JOIN read_progresses AS R ON R.book_id = B.id 
 		ORDER BY F.updated_at desc LIMIT ? OFFSET ?;
 		`
 
-	err := store.Raw(sql, userID, limit, offset).Scan(&processBook).Error
+	err := store.Raw(sql, userID, limit, offset).Scan(&progressBook).Error
 
 	// SELECT * FROM table where count_visit = 0 ORDER BY ctime desc LIMIT 1;
-	// err := store.Table(`books`).Where(`id IN ( SELECT book_id FROM read_processes ORDER BY updated_at desc LIMIT ? )`, limit).Find(&books).Error
-	return processBook, err
+	// err := store.Table(`books`).Where(`id IN ( SELECT book_id FROM read_progresses ORDER BY updated_at desc LIMIT ? )`, limit).Find(&books).Error
+	return progressBook, err
 	// return BookResp{len(books), books}, err
 
 }

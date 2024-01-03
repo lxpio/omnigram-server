@@ -46,7 +46,7 @@ func Setup(router *gin.Engine) {
 	book.GET("/recent", RecentBook)
 
 	book.GET("/fav", FavBookHandle)
-	router.GET("/personal", PersonalBooksHandle)
+	book.GET("/personal", PersonalBooksHandle)
 	// router.GET("/book/hot", HotBook)
 
 	book.GET("/upload", bookUploadHandle)
