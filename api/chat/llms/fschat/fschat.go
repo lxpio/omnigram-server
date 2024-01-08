@@ -6,8 +6,8 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/nexptr/omnigram-server/api/chat/llms"
-	"github.com/nexptr/omnigram-server/api/chat/llms/schema"
+	"github.com/lxpio/omnigram-server/api/chat/llms"
+	"github.com/lxpio/omnigram-server/api/chat/llms/schema"
 )
 
 var _ llms.LLM = &FSChat{}

@@ -5,9 +5,9 @@ import (
 	"runtime"
 	"testing"
 
-	"github.com/nexptr/omnigram-server/api/epub/schema"
-	"github.com/nexptr/omnigram-server/log"
-	"github.com/nexptr/omnigram-server/store"
+	"github.com/lxpio/omnigram-server/api/epub/schema"
+	"github.com/lxpio/omnigram-server/log"
+	"github.com/lxpio/omnigram-server/store"
 	"go.uber.org/zap/zapcore"
 )
 

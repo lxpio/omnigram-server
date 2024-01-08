@@ -3,8 +3,8 @@ package fschat
 import (
 	"testing"
 
-	"github.com/nexptr/omnigram-server/conf"
-	"github.com/nexptr/omnigram-server/log"
+	"github.com/lxpio/omnigram-server/conf"
+	"github.com/lxpio/omnigram-server/log"
 	"go.uber.org/zap/zapcore"
 )
 

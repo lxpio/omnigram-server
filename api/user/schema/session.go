@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/nexptr/omnigram-server/log"
+	"github.com/lxpio/omnigram-server/log"
 	"gorm.io/gorm"
 )
 

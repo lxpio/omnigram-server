@@ -11,10 +11,10 @@ import (
 	"strings"
 	"time"
 
+	"github.com/lxpio/omnigram-server/log"
+	"github.com/lxpio/omnigram-server/store"
+	"github.com/lxpio/omnigram-server/utils"
 	"github.com/nexptr/epub"
-	"github.com/nexptr/omnigram-server/log"
-	"github.com/nexptr/omnigram-server/store"
-	"github.com/nexptr/omnigram-server/utils"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 )

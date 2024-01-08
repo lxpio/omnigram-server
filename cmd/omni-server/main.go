@@ -8,9 +8,9 @@ import (
 	"os/signal"
 	"syscall"
 
-	api "github.com/nexptr/omnigram-server"
-	"github.com/nexptr/omnigram-server/conf"
-	"github.com/nexptr/omnigram-server/log"
+	api "github.com/lxpio/omnigram-server"
+	"github.com/lxpio/omnigram-server/conf"
+	"github.com/lxpio/omnigram-server/log"
 )
 
 var (

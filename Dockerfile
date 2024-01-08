@@ -25,8 +25,8 @@ RUN apk add build-base && \
     chmod +x /omnigram-server/docker-entrypoint.sh && \
     mkdir -p /build/data && mkdir /build/conf && mkdir /build/bin && \
     cp /omnigram-server/conf/conf.yaml /build/conf/conf.yaml && \
-    GOOS=$TARGETOS GOARCH=$TARGETARCH go build -ldflags "-X main.BUILDSTAMP=${BUILD_DATE} -X main.GITHASH=${BUILD_HASH} -X github.com/nexptr/omnigram-server/conf.Version=${BUILD_VERSION} -s -w" \
-    -o /build/bin/omni-server github.com/nexptr/omnigram-server/cmd/omni-server
+    GOOS=$TARGETOS GOARCH=$TARGETARCH go build -ldflags "-X main.BUILDSTAMP=${BUILD_DATE} -X main.GITHASH=${BUILD_HASH} -X github.com/lxpio/omnigram-server/conf.Version=${BUILD_VERSION} -s -w" \
+    -o /build/bin/omni-server github.com/lxpio/omnigram-server/cmd/omni-server
 
 
 FROM --platform=$TARGETPLATFORM alpine:3.18.4

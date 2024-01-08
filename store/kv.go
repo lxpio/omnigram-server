@@ -9,7 +9,7 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/nexptr/omnigram-server/log"
+	"github.com/lxpio/omnigram-server/log"
 )
 
 type CacheEntryIdxMode int

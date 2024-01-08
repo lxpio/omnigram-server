@@ -4,7 +4,8 @@ import os
 from scipy.io.wavfile import write
 from io import BytesIO
 from pb import m4t_pb2
-
+import torch
+# import deepspeed
 
 
 class ClonerManager:
@@ -86,13 +87,22 @@ class Cloner:
         # torch.save(outputs['wav'], audio_path)
 
 class TTSModel:
-    def __init__(self, model_path):
+    def __init__(self, model_path,device_type = "cuda"):
         self.config = XttsConfig()
         self.config.load_json(os.path.join(model_path, 'config.json'))
         self.model = Xtts.init_from_config(self.config)
-        self.model.load_checkpoint(self.config, checkpoint_dir=model_path, eval=True, use_deepspeed=True)
-        self.model.cuda()
- 
+        # 初始化模型，根据是否有 GPU 决定使用 GPU 还是 CPU 推导
+        if torch.cuda.is_available() and device_type == "cuda":
+            print("using cuda as device.")
+            self.device = torch.device("cuda")
+            self.model.load_checkpoint(self.config, checkpoint_dir=model_path, eval=True, use_deepspeed=False)
+        else:
+            print("using cpu as device.")
+            self.device = torch.device("cpu")
+            self.model.load_checkpoint(self.config, checkpoint_dir=model_path, eval=True, use_deepspeed=False)
+        self.model.to(self.device)
+
+
     def get_conditioning_latents(
             self,
             audio_path,

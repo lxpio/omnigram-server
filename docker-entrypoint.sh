@@ -3,7 +3,6 @@
 #
 set -e
 
-
 _want_init() {
 	local arg
 	for arg; do
@@ -23,12 +22,12 @@ CONTAINER_FIRST_STARTUP="CONTAINER_FIRST_STARTUP"
 
 # if command starts with an option, prepend omni-server
 if [ "${1:0:1}" = '-' ]; then
-    set -- omni-server "$@"
+    exec omni-server "$@"
 fi
 # cd workspace
 
-if [ ! -e /$CONTAINER_FIRST_STARTUP ] && ! _want_init "$@"; then
-    touch /$CONTAINER_FIRST_STARTUP
+if [ ! -e /metadata/$CONTAINER_FIRST_STARTUP ] && ! _want_init "$@"; then
+    touch /metadata/$CONTAINER_FIRST_STARTUP
     # place your script that you only want to run on first startup.
     omni-server -conf ${CONFIG_FILE} -init
 fi

@@ -4,10 +4,10 @@ import (
 	"strconv"
 
 	"github.com/gin-gonic/gin"
-	"github.com/nexptr/omnigram-server/api/user/schema"
-	"github.com/nexptr/omnigram-server/log"
-	"github.com/nexptr/omnigram-server/middleware"
-	"github.com/nexptr/omnigram-server/utils"
+	"github.com/lxpio/omnigram-server/api/user/schema"
+	"github.com/lxpio/omnigram-server/log"
+	"github.com/lxpio/omnigram-server/middleware"
+	"github.com/lxpio/omnigram-server/utils"
 )
 
 func loginHandle(c *gin.Context) {

@@ -5,8 +5,8 @@ import (
 	"runtime"
 	"testing"
 
-	"github.com/nexptr/omnigram-server/api/chat/llms/openai"
-	"github.com/nexptr/omnigram-server/conf"
+	"github.com/lxpio/omnigram-server/api/chat/llms/openai"
+	"github.com/lxpio/omnigram-server/conf"
 )
 
 func TestManager_LoadConfig(t *testing.T) {

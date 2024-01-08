@@ -8,8 +8,8 @@ import (
 	"os"
 	"testing"
 
-	"github.com/nexptr/omnigram-server/api/m4t"
-	"github.com/nexptr/omnigram-server/log"
+	"github.com/lxpio/omnigram-server/api/m4t"
+	"github.com/lxpio/omnigram-server/log"
 
 	"go.uber.org/zap/zapcore"
 	grpc "google.golang.org/grpc"

@@ -2,8 +2,8 @@ package epub
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/nexptr/omnigram-server/log"
-	"github.com/nexptr/omnigram-server/utils"
+	"github.com/lxpio/omnigram-server/log"
+	"github.com/lxpio/omnigram-server/utils"
 )
 
 // ScanStatus 获取当前扫描状态
@@ -19,7 +19,7 @@ func getScanStatusHandle(c *gin.Context) {
 func stopScanHandle(c *gin.Context) {
 
 	log.I(`停止当前扫描`)
-	manager.Close()
+	manager.Stop()
 
 	c.JSON(200, utils.SUCCESS.WithData(manager.Status()))
 

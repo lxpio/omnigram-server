@@ -3,12 +3,12 @@ package chat
 import (
 	"fmt"
 
-	"github.com/nexptr/omnigram-server/api/chat/llms"
+	"github.com/lxpio/omnigram-server/api/chat/llms"
 
-	"github.com/nexptr/omnigram-server/api/chat/llms/fschat"
-	"github.com/nexptr/omnigram-server/api/chat/llms/openai"
-	"github.com/nexptr/omnigram-server/conf"
-	"github.com/nexptr/omnigram-server/log"
+	"github.com/lxpio/omnigram-server/api/chat/llms/fschat"
+	"github.com/lxpio/omnigram-server/api/chat/llms/openai"
+	"github.com/lxpio/omnigram-server/conf"
+	"github.com/lxpio/omnigram-server/log"
 )
 
 // Manager LLM model manager

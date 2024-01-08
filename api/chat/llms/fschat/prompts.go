@@ -1,6 +1,6 @@
 package fschat
 
-import "github.com/nexptr/omnigram-server/api/chat/llms/schema"
+import "github.com/lxpio/omnigram-server/api/chat/llms/schema"
 
 const sysPrompt = `你是一个助手。`
 

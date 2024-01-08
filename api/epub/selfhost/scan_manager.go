@@ -6,11 +6,11 @@ import (
 	"path/filepath"
 	"sync"
 
-	"github.com/nexptr/omnigram-server/api/epub/schema"
-	"github.com/nexptr/omnigram-server/conf"
-	"github.com/nexptr/omnigram-server/log"
-	"github.com/nexptr/omnigram-server/store"
-	"github.com/nexptr/omnigram-server/utils"
+	"github.com/lxpio/omnigram-server/api/epub/schema"
+	"github.com/lxpio/omnigram-server/conf"
+	"github.com/lxpio/omnigram-server/log"
+	"github.com/lxpio/omnigram-server/store"
+	"github.com/lxpio/omnigram-server/utils"
 	"github.com/nutsdb/nutsdb"
 	"gorm.io/gorm"
 )
@@ -37,6 +37,9 @@ type ScannerManager struct {
 	orm      *gorm.DB
 
 	ctx context.Context
+
+	//cancel scanner
+	cancelFunc context.CancelFunc
 
 	sync.RWMutex
 
@@ -77,12 +80,6 @@ func (m *ScannerManager) Status() ScanStatus {
 	m.RLock()
 	defer m.RUnlock()
 
-	// s := ScanStatus{
-	// 	Running:   m.stats.Running,
-	// 	BookCount: m.stats.BookCount,
-	// 	Errs:      m.stats.Errs,
-	// }
-
 	return m.stats
 
 }
@@ -94,14 +91,18 @@ func (m *ScannerManager) Start(maxThread int, refresh bool) {
 		return
 	}
 	log.I(`启动文件目录扫描`)
-	m.newScan(maxThread, refresh)
+
+	m.newScan(refresh)
 
 }
 
-func (m *ScannerManager) newScan(maxThread int, refresh bool) {
+func (m *ScannerManager) newScan(refresh bool) {
 	m.Lock()
 
-	scan, err := NewScan(m.dataPath, m.metaPath) //new scanner
+	var ctx context.Context
+	ctx, m.cancelFunc = context.WithCancel(m.ctx)
+
+	scan, err := NewScan(ctx, m.dataPath, m.metaPath) //new scanner
 
 	if err != nil {
 		m.Unlock()
@@ -111,7 +112,7 @@ func (m *ScannerManager) newScan(maxThread int, refresh bool) {
 	m.stats.Running = true
 	m.Unlock()
 
-	scan.Start(m, maxThread, refresh)
+	scan.Start(m, refresh)
 }
 
 func (m *ScannerManager) updateStatus(stats ScanStatus) {
@@ -121,16 +122,23 @@ func (m *ScannerManager) updateStatus(stats ScanStatus) {
 
 }
 
-func (m *ScannerManager) Close() {
+func (m *ScannerManager) Stop() {
 	m.Lock()
 	defer m.Unlock()
-	m.stats.Running = false
+	if m.cancelFunc != nil {
+		log.D(`执行退出扫描命令...`)
+		m.cancelFunc()
+	} else {
+
+		m.stats.Running = false
+	}
 
 }
 
-func (m *ScannerManager) dumpStats(cached *nutsdb.DB) error {
+func (m *ScannerManager) dumpStats(cached *nutsdb.DB, done bool) error {
 
 	stats := m.Status()
+	stats.Running = !done
 	bytes, _ := json.Marshal(stats)
 
 	return cached.Update(

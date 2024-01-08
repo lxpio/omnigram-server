@@ -5,7 +5,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/nexptr/omnigram-server/store"
+	"github.com/lxpio/omnigram-server/store"
 	"go.uber.org/zap/zapcore"
 	"gopkg.in/yaml.v2"
 )

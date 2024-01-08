@@ -3,7 +3,7 @@
 ## 入门
 
 ```
-git clone github/nexptr/omnigram-server.git
+git clone github/lxpio/omnigram-server.git
 cd omnigram-server
 
 make 

@@ -5,7 +5,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/nexptr/omnigram-server/log"
+	"github.com/lxpio/omnigram-server/log"
 	"go.uber.org/zap/zapcore"
 	"gorm.io/driver/mysql"
 	"gorm.io/driver/postgres"

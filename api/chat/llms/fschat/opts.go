@@ -6,8 +6,8 @@ import (
 	"net/url"
 	"strings"
 
-	"github.com/nexptr/omnigram-server/conf"
-	"github.com/nexptr/omnigram-server/log"
+	"github.com/lxpio/omnigram-server/conf"
+	"github.com/lxpio/omnigram-server/log"
 )
 
 const DefaultVicunaAddr = `http://127.0.0.1:21002`

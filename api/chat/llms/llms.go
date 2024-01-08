@@ -3,7 +3,7 @@ package llms
 import (
 	"context"
 
-	"github.com/nexptr/omnigram-server/api/chat/llms/schema"
+	"github.com/lxpio/omnigram-server/api/chat/llms/schema"
 )
 
 // LLM common interface for lang model

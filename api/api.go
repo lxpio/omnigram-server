@@ -5,13 +5,13 @@ import (
 	"os"
 
 	"github.com/gin-gonic/gin"
-	"github.com/nexptr/omnigram-server/api/chat"
-	"github.com/nexptr/omnigram-server/api/epub"
-	"github.com/nexptr/omnigram-server/api/m4t"
-	"github.com/nexptr/omnigram-server/api/sys"
-	"github.com/nexptr/omnigram-server/api/user"
-	"github.com/nexptr/omnigram-server/conf"
-	"github.com/nexptr/omnigram-server/log"
+	"github.com/lxpio/omnigram-server/api/chat"
+	"github.com/lxpio/omnigram-server/api/epub"
+	"github.com/lxpio/omnigram-server/api/m4t"
+	"github.com/lxpio/omnigram-server/api/sys"
+	"github.com/lxpio/omnigram-server/api/user"
+	"github.com/lxpio/omnigram-server/conf"
+	"github.com/lxpio/omnigram-server/log"
 )
 
 func Initialize(ctx context.Context, cf *conf.Config) {

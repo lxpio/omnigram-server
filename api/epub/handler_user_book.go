@@ -4,10 +4,10 @@ import (
 	"strconv"
 
 	"github.com/gin-gonic/gin"
-	"github.com/nexptr/omnigram-server/api/epub/schema"
-	"github.com/nexptr/omnigram-server/log"
-	"github.com/nexptr/omnigram-server/middleware"
-	"github.com/nexptr/omnigram-server/utils"
+	"github.com/lxpio/omnigram-server/api/epub/schema"
+	"github.com/lxpio/omnigram-server/log"
+	"github.com/lxpio/omnigram-server/middleware"
+	"github.com/lxpio/omnigram-server/utils"
 )
 
 // PersonalBooksHandle 获取用户喜欢的书籍列表

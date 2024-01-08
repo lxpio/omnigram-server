@@ -1,60 +1,66 @@
 # omnigram-server
 
-omnigram-server 是使用 Golang 编写的个人内容管理后端服务，提供类似 jellyfin 和 navidrome 文档搜刮与管理功能。
-客户端支持请前往 [Omnigram](github.com/nexptr/omnigram).
+<div style="font-size: 1.5rem;">
+  <a href="./README.md">English</a> | <a href="./README.zh.md">中文</a>
+</div>
+</br>
 
-> 提醒：中国境内网站，个人是不允许进行在线出版的，维护公开的书籍网站是违法违规的行为！仅作为个人学习使用！
+omnigram-server is a personal content management backend service written in Golang, providing document scraping and management features similar to Jellyfin and Navidrome.
+For client support, please visit [Omnigram](github.com/lxpio/omnigram).
 
-### 文档
+> Reminder: It is not allowed to publish personal websites in mainland China, maintaining publicly accessible book websites is considered illegal and against regulations! Intended for personal learning use only!
 
-您可以在 https://omnigram.nexptr.com/ 找到官方文档（包含安装手册）。
+### Documentation
 
-### 目标与功能介绍
+Official documentation (including installation manual) can be found at https://omnigram.lxpio.com/.
 
-1. 提供 NAS 私有化电子书库搜刮服务（当前仅支持 Epub 格式）；
-2. 使用 TTS 模型实现，提供电子书阅读服务（需要额外动模型服务参考 [m4t_server](m4t_server/README.md)）；
-3. 提供 Chat 模型支持对电子书进行理解分析，支持对自己简单日记进行扩展书写和润色；
+### Objectives and Features
 
-## 部署方式
+1. Provide NAS privatized e-book library scraping service (currently supports only Epub format);
+2. Implemented using TTS models, provide e-book reading service (additional model service reference [m4t_server](docs/en/m4t-server.md) is required);
+3. Provide Chat model support for understanding and analyzing e-books, supporting the expansion and refinement of simple diaries;
 
-### 快速启动
+## Deployment
+
+### Quick Start
 
 ### docker
 
 ```bash
-# 这里需要替换${MY_DIR}自己实际包含epub文件目录
+# Replace ${MY_DIR} with your actual directory containing epub files
 docker run --rm -v ${MY_DIR}:/docs -p 8080:80 lxpio/omnigram-server:latest
 ```
 
 TODO
 
-### linux server
+### Linux server
 
-使用 Mysql 或者 Postgresql 数据库
+Use Mysql or Postgresql database
 
-1. 修改配置文件 conf.yaml
+1. Modify the configuration file conf.yaml
 
-### 开发计划
+### Development Plan
 
-- [x] 支持多用户管理与用户分级
-- [x] 支持 TTS 阅读；
-- [] 支持浏览管理
+- [x] Support multi-user management and user grading
+- [x] Support TTS reading;
+- [] Support browsing and management
 
-## 常见问题
+## Frequently Asked Questions
 
-常见问题请参阅使用指南
+For common issues, please refer to the user guide
 
-手动安装请参考[开发指南](docs/dev.md)
+For manual installation, refer to the [development guide](docs/dev.md)
 
-## 项目依赖以及三分框架使用说明
-
-TODO
-
-## 鸣谢
+## Project Dependencies and Third-party Framework Usage Instructions
 
 TODO
 
-### 支持本项目
+## Acknowledgments
 
-我已经致力于本项目并且将我会持续更新文档、新增功能和修复问题。但是独木不成林，我需要您给予我坚持下去的动力。
-如果您使用了本项目一段时间，并且觉得上面的话有道理，那么请您考虑通过下列任一方式支持我吧。
+TODO
+
+### Support this Project
+
+I am dedicated to this project and will continue to update documentation, add features, and fix issues. However, I cannot do it alone; I need your help to improve this project.
+
+

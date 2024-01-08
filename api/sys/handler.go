@@ -4,10 +4,10 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/nexptr/omnigram-server/api/m4t"
-	"github.com/nexptr/omnigram-server/conf"
-	"github.com/nexptr/omnigram-server/log"
-	"github.com/nexptr/omnigram-server/utils"
+	"github.com/lxpio/omnigram-server/api/m4t"
+	"github.com/lxpio/omnigram-server/conf"
+	"github.com/lxpio/omnigram-server/log"
+	"github.com/lxpio/omnigram-server/utils"
 )
 
 type ServerConfig struct {

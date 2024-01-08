@@ -9,8 +9,8 @@ import (
 	sync "sync"
 
 	"github.com/gin-gonic/gin"
-	"github.com/nexptr/omnigram-server/log"
-	"github.com/nexptr/omnigram-server/utils"
+	"github.com/lxpio/omnigram-server/log"
+	"github.com/lxpio/omnigram-server/utils"
 	grpc "google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 )

@@ -5,7 +5,7 @@ PROJECT_NAME=omnigram-server
 VERSION=$(shell git describe --tags | sed 's/\(.*\)-.*/\1/')
 BUILD_DATE=$(shell date -u '+%Y-%m-%d_%I_%M_%S%p')
 BUILD_HASH=$(shell git rev-parse HEAD)
-LDFLAGS="-X main.BUILDSTAMP=${BUILD_DATE} -X main.GITHASH=${BUILD_HASH} -X github.com/nexptr/omnigram-server/conf.Version=${VERSION} -s -w"
+LDFLAGS="-X main.BUILDSTAMP=${BUILD_DATE} -X main.GITHASH=${BUILD_HASH} -X github.com/lxpio/omnigram-server/conf.Version=${VERSION} -s -w"
 # SHELL := /bin/bash
 VERSION=v0.0.4
 DESTDIR=${PROJECT_PATH}/build/omnigram-server-${VERSION}
@@ -44,8 +44,8 @@ omnigram-server: api/m4t/m4t_grpc.pb.go api/m4t/m4t.pb.go
 	@echo "copy default configure file"
 	@cp -f ${PROJECT_PATH}/conf/conf.yaml ${DESTDIR}/conf/conf.yaml
 
-	@echo "build github.com/nexptr/omnigram-server"
-	@env  go build -ldflags ${LDFLAGS} -o ${DESTDIR}/bin/omni-server github.com/nexptr/omnigram-server/cmd/omni-server
+	@echo "build github.com/lxpio/omnigram-server"
+	@env  go build -ldflags ${LDFLAGS} -o ${DESTDIR}/bin/omni-server github.com/lxpio/omnigram-server/cmd/omni-server
 
 docs:
     # you should install apidoc cli first by `npx install -g apidoc`

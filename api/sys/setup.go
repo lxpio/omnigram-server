@@ -4,8 +4,8 @@ import (
 	"context"
 
 	"github.com/gin-gonic/gin"
-	"github.com/nexptr/omnigram-server/conf"
-	"github.com/nexptr/omnigram-server/middleware"
+	"github.com/lxpio/omnigram-server/conf"
+	"github.com/lxpio/omnigram-server/middleware"
 )
 
 var gcf *conf.Config

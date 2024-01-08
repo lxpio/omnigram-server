@@ -114,14 +114,15 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument("--host", type=str, default="localhost")
     parser.add_argument("--port", type=str, default='50051')
+    parser.add_argument("--device", type=str, default="cuda")
     parser.add_argument("--model-path", type=str, default="/HHD1/XTTS-v2/")
-    parser.add_argument("--speaker-path", type=str, default="/speakers")
+    parser.add_argument("--speakers-path", type=str, default="/speakers")
 
     args = parser.parse_args()
-    speakers = Speakers(args.speaker_path)
+    speakers = Speakers(args.speakers_path)
     speakers.load()
 
-    manager = ClonerManager(TTSModel(args.model_path),speakers)
+    manager = ClonerManager(TTSModel(args.model_path,args.device),speakers)
 
 
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))

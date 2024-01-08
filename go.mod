@@ -1,4 +1,4 @@
-module github.com/nexptr/omnigram-server
+module github.com/lxpio/omnigram-server
 
 go 1.20
 

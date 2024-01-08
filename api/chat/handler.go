@@ -12,9 +12,9 @@ import (
 
 	"github.com/gin-gonic/gin"
 
-	"github.com/nexptr/omnigram-server/api/chat/llms/schema"
-	"github.com/nexptr/omnigram-server/log"
-	"github.com/nexptr/omnigram-server/utils"
+	"github.com/lxpio/omnigram-server/api/chat/llms/schema"
+	"github.com/lxpio/omnigram-server/log"
+	"github.com/lxpio/omnigram-server/utils"
 )
 
 func editEndpointHandler() gin.HandlerFunc {

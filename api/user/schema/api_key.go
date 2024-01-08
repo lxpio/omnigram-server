@@ -3,8 +3,8 @@ package schema
 import (
 	"strconv"
 
-	"github.com/nexptr/omnigram-server/log"
-	"github.com/nexptr/omnigram-server/utils"
+	"github.com/lxpio/omnigram-server/log"
+	"github.com/lxpio/omnigram-server/utils"
 	"gorm.io/gorm"
 )
 

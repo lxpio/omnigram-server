@@ -9,9 +9,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/nexptr/omnigram-server/conf"
-	"github.com/nexptr/omnigram-server/log"
-	"github.com/nexptr/omnigram-server/store"
+	"github.com/lxpio/omnigram-server/conf"
+	"github.com/lxpio/omnigram-server/log"
+	"github.com/lxpio/omnigram-server/store"
 	"go.uber.org/zap/zapcore"
 	"gorm.io/gorm"
 )

@@ -6,7 +6,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/nexptr/omnigram-server/log"
+	"github.com/lxpio/omnigram-server/log"
 	"go.uber.org/zap/zapcore"
 )
 

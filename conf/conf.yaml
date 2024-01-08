@@ -2,10 +2,10 @@
 api_addr: '0.0.0.0:80'
 
 
-log_level: 'debug'
+log_level: 'info'
 
-#log_dir: 'stdout' 
-log_dir: './log'
+log_dir: 'stdout'
+# log_dir: './log'
 
 metadata_path: '/metadata'
 

@@ -5,9 +5,9 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/nexptr/omnigram-server/api/chat/llms"
-	"github.com/nexptr/omnigram-server/api/chat/llms/schema"
-	"github.com/nexptr/omnigram-server/conf"
+	"github.com/lxpio/omnigram-server/api/chat/llms"
+	"github.com/lxpio/omnigram-server/api/chat/llms/schema"
+	"github.com/lxpio/omnigram-server/conf"
 )
 
 var _ llms.LLM = &OpenAI{}

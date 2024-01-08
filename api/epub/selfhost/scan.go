@@ -9,8 +9,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/nexptr/omnigram-server/api/epub/schema"
-	"github.com/nexptr/omnigram-server/log"
+	"github.com/lxpio/omnigram-server/api/epub/schema"
+	"github.com/lxpio/omnigram-server/log"
 	"github.com/nutsdb/nutsdb"
 )
 
@@ -22,6 +22,7 @@ type Scanner struct {
 	Count   int      `json:"count"` //扫描文件计数
 	Errs    []string `json:"errors"`
 	root    string   `json:"-"` //扫描错误详情信息
+	ctx     context.Context
 	cached  *nutsdb.DB
 	wg      *sync.WaitGroup `json:"-"`
 }
@@ -35,7 +36,7 @@ func (m *Scanner) Stop() {
 	}
 }
 
-func NewScan(root, meta string) (*Scanner, error) {
+func NewScan(ctx context.Context, root, meta string) (*Scanner, error) {
 
 	db, err := nutsdb.Open(
 		nutsdb.DefaultOptions,
@@ -51,13 +52,14 @@ func NewScan(root, meta string) (*Scanner, error) {
 		Count:  0,
 		root:   root,
 		cached: db,
+		ctx:    ctx,
 		wg:     new(sync.WaitGroup),
 		Errs:   []string{},
 	}, nil
 
 }
 
-func (m *Scanner) startSingleThread(manager *ScannerManager, books <-chan *schema.Book) {
+func (m *Scanner) scanEpub(manager *ScannerManager, books <-chan *schema.Book) {
 
 	errs := []string{}
 	statusChan := make(chan ScanStatus) // 新增一个状态通道
@@ -80,11 +82,12 @@ func (m *Scanner) startSingleThread(manager *ScannerManager, books <-chan *schem
 
 			select {
 
-			case <-manager.ctx.Done():
+			case <-m.ctx.Done():
 				log.W(`接收到退出命令，退出扫描`)
 				return
 			case book, ok := <-books:
-
+				//debug
+				// time.Sleep(200 * time.Millisecond)
 				if !ok {
 					//books is closed
 					log.I(`书籍为空，退出解析文件。`)
@@ -97,7 +100,7 @@ func (m *Scanner) startSingleThread(manager *ScannerManager, books <-chan *schem
 					log.E(`获取图书基本元素失败 `, err.Error())
 					errs = append(errs, `文件：`+book.Path+` 解析失败：`+err.Error())
 				} else {
-					if err := book.Save(manager.ctx, manager.orm, manager.kv); err != nil {
+					if err := book.Save(m.ctx, manager.orm, manager.kv); err != nil {
 						errs = append(errs, err.Error())
 					} else {
 						m.cacheEpubFilePath(book.Path)
@@ -128,7 +131,7 @@ func (m *Scanner) startSingleThread(manager *ScannerManager, books <-chan *schem
 			manager.updateStatus(status)
 		}
 		//关闭扫描器
-		manager.dumpStats(m.cached)
+		manager.dumpStats(m.cached, true)
 
 		m.cached.Close()
 		m.cached = nil
@@ -136,16 +139,16 @@ func (m *Scanner) startSingleThread(manager *ScannerManager, books <-chan *schem
 
 }
 
-func (m *Scanner) Start(manager *ScannerManager, maxThread int, refresh bool) {
+func (m *Scanner) Start(manager *ScannerManager, refresh bool) {
 
-	books := m.Walk(manager.ctx, refresh)
+	books := m.Walk(refresh)
 
-	m.startSingleThread(manager, books)
+	m.scanEpub(manager, books)
 
 }
 
 // Walk 遍历扫描路径下epub文件
-func (m *Scanner) Walk(ctx context.Context, refresh bool) <-chan *schema.Book {
+func (m *Scanner) Walk(refresh bool) <-chan *schema.Book {
 
 	log.I(`开始扫描路径:`, m.root)
 	books := make(chan *schema.Book)

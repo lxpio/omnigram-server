@@ -5,8 +5,8 @@ import (
 	"encoding/json"
 	"testing"
 
-	"github.com/nexptr/omnigram-server/api/chat/llms/openai"
-	"github.com/nexptr/omnigram-server/api/chat/llms/schema"
+	"github.com/lxpio/omnigram-server/api/chat/llms/openai"
+	"github.com/lxpio/omnigram-server/api/chat/llms/schema"
 )
 
 // this is my local dev env

@@ -5,8 +5,8 @@ import (
 	"runtime"
 	"testing"
 
-	"github.com/nexptr/omnigram-server/api/epub/schema"
-	"github.com/nexptr/omnigram-server/store"
+	"github.com/lxpio/omnigram-server/api/epub/schema"
+	"github.com/lxpio/omnigram-server/store"
 )
 
 func TestGetReadProcessBooks(t *testing.T) {

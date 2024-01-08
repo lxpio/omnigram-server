@@ -1,6 +1,6 @@
 package llms
 
-import "github.com/nexptr/omnigram-server/api/chat/llms/schema"
+import "github.com/lxpio/omnigram-server/api/chat/llms/schema"
 
 // CallOption is a function that configures a CallOptions.
 type CallOption func(*CallOptions)
