@@ -64,6 +64,7 @@ jobs:
             type=raw,value=release,enable=${{ github.event_name == 'release' }},suffix=${{ env.SUFFIX }}
             # latest
             type=raw,event=tag,value=latest,enable=${{ matrix.image_type != 'cpu' }},suffix=
+            type=raw,event=tag,value=latest,enable=${{ matrix.image_type == 'cpu' }},suffix=${{ env.SUFFIX }}
           labels: |
             com.lxpio.image.authors="@LxpioTeam"
             com.lxpio.image.licenses=Apache-2.0
