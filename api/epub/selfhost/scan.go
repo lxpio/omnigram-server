@@ -59,6 +59,15 @@ func NewScan(ctx context.Context, root, meta string) (*Scanner, error) {
 
 }
 
+func (m *Scanner) status(errs []string, done bool) ScanStatus {
+	return ScanStatus{
+		Running:   done,
+		ScanCount: m.Count,
+		EpubCount: m.Count, // 当前只是扫描了 epub 文件
+		Errs:      errs,
+	}
+}
+
 func (m *Scanner) scanEpub(manager *ScannerManager, books <-chan *schema.Book) {
 
 	errs := []string{}
@@ -73,6 +82,7 @@ func (m *Scanner) scanEpub(manager *ScannerManager, books <-chan *schema.Book) {
 
 			m.wg.Done()
 			// close(errChan)
+
 			close(statusChan)
 			ticker.Stop()
 			log.I(`退出扫描程序`)
@@ -83,14 +93,17 @@ func (m *Scanner) scanEpub(manager *ScannerManager, books <-chan *schema.Book) {
 			select {
 
 			case <-m.ctx.Done():
+				statusChan <- m.status(errs, false)
 				log.W(`接收到退出命令，退出扫描`)
 				return
+			case <-ticker.C: // 定时器触发时发送当前状态
+				statusChan <- m.status(errs, true)
+				errs = []string{}
 			case book, ok := <-books:
-				//debug
-				// time.Sleep(200 * time.Millisecond)
 				if !ok {
 					//books is closed
-					log.I(`书籍为空，退出解析文件。`)
+					statusChan <- m.status(errs, false)
+					log.I(`扫描完成，退出解析文件。`)
 					return
 				}
 				m.Count++
@@ -109,15 +122,6 @@ func (m *Scanner) scanEpub(manager *ScannerManager, books <-chan *schema.Book) {
 
 				}
 
-			case <-ticker.C: // 定时器触发时发送当前状态
-				status := ScanStatus{
-					Running:   true,
-					ScanCount: m.Count,
-					EpubCount: m.Count, // 当前只是扫描了 epub 文件
-					Errs:      errs,
-				}
-				statusChan <- status
-				errs = []string{}
 			}
 		}
 
@@ -131,7 +135,7 @@ func (m *Scanner) scanEpub(manager *ScannerManager, books <-chan *schema.Book) {
 			manager.updateStatus(status)
 		}
 		//关闭扫描器
-		manager.dumpStats(m.cached, true)
+		manager.dumpStats(m.cached)
 
 		m.cached.Close()
 		m.cached = nil

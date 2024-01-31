@@ -18,5 +18,5 @@ docker_gpu:
 	@docker buildx build --build-arg BUILD_COUNTRY="CN" -t m4t-server:0.0.2 ./
 
 docker_cpu:
-	@docker buildx build --build-arg BUILD_COUNTRY="CN" --build-arg BASE="python:3.10.8-slim" --build-arg DEVICE="cpu" -t m4t-server:0.0.2-cpu ./
+	@docker buildx build --build-arg BUILD_COUNTRY="CN" --build-arg DEVICE="cpu" -t m4t-server:0.0.2-cpu ./
 

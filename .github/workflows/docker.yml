@@ -28,7 +28,7 @@ jobs:
             file: "m4t_server/Dockerfile"
             image: "m4t-server"
             platforms: "linux/amd64,linux/arm64"
-            base: "python:3.10.8-slim" # CPU only
+            base: "nvidia/cuda:12.2.2-base-ubuntu22.04" # CPU only
             image_type: "cpu"
           - context: "."
             file: "Dockerfile"

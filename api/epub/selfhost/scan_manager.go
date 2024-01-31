@@ -110,16 +110,10 @@ func (m *ScannerManager) newScan(refresh bool) {
 		return
 	}
 	m.stats.Running = true
+	m.stats.Errs = nil
 	m.Unlock()
 
 	scan.Start(m, refresh)
-}
-
-func (m *ScannerManager) updateStatus(stats ScanStatus) {
-	m.Lock()
-	defer m.Unlock()
-	m.stats = stats
-
 }
 
 func (m *ScannerManager) Stop() {
@@ -135,11 +129,18 @@ func (m *ScannerManager) Stop() {
 
 }
 
-func (m *ScannerManager) dumpStats(cached *nutsdb.DB, done bool) error {
+func (m *ScannerManager) updateStatus(stats ScanStatus) {
+	m.Lock()
+	defer m.Unlock()
+	stats.Errs = append(stats.Errs, m.stats.Errs...)
+	stats.Total = m.stats.Total + int64(m.stats.ScanCount)
+	m.stats = stats
 
-	stats := m.Status()
-	stats.Running = !done
-	bytes, _ := json.Marshal(stats)
+}
+
+func (m *ScannerManager) dumpStats(cached *nutsdb.DB) error {
+
+	bytes, _ := json.Marshal(m.Status())
 
 	return cached.Update(
 		func(tx *nutsdb.Tx) error {
